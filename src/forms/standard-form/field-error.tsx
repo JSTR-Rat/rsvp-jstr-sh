@@ -1,0 +1,34 @@
+import type { AnyFieldApi } from '@tanstack/react-form';
+import { sfFieldErrorText, sfFontSans } from './shared-classes';
+
+interface FieldErrorProps {
+  field: AnyFieldApi;
+}
+
+/**
+ * Displays validation errors for a form field.
+ * Supports both string errors and structured error objects.
+ */
+export function StandardFieldError({ field }: FieldErrorProps) {
+  const errors = field.state.meta.errors;
+  const isTouched = field.state.meta.isTouched;
+
+  if (!errors || errors.length === 0 || !isTouched) {
+    return null;
+  }
+
+  return (
+    <div
+      id={`${field.name}-error`}
+      className={sfFieldErrorText}
+      style={{ fontFamily: sfFontSans }}
+      role="alert"
+    >
+      {errors.map((error) => {
+        const message =
+          typeof error === 'string' ? error : error?.message || String(error);
+        return <div key={message}>{message}</div>;
+      })}
+    </div>
+  );
+}

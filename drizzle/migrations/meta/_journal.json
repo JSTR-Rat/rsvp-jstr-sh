@@ -15,6 +15,13 @@
       "when": 1776739215380,
       "tag": "0001_safe_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1777552215360,
+      "tag": "0002_faithful_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }
