@@ -1,0 +1,79 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Package manager
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log*
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.output/
+.vinxi/
+.react-router/
+
+# Environment variables
+.env
+.env.*
+.dev.vars
+
+# Cloudflare Workers
+.wrangler/
+.mf/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+.drizzle/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# Photos
+image_originals/
+
+# TypeScript
+*.tsbuildinfo
+
+# Debug
+.vite-inspect/
+
+# Misc
+*.local
