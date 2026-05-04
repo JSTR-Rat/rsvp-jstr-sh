@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { HeroBlurredBackground } from '@/components/hero-blurred-background';
+import { clsx } from 'clsx';
 import {
   GOOGLE_FONTS_CSS_HREF,
   sfFontSans,
@@ -13,7 +15,10 @@ import {
 
 interface StandardFormLayoutProps {
   title: string;
-  subtitle: string;
+  /** When omitted, no subtitle line is shown (e.g. confirmation panels). */
+  subtitle?: string;
+  /** Blurred engagement photo + `/` hero gradients instead of solid form backdrop. */
+  heroPhotoBackdrop?: boolean;
   children: ReactNode;
 }
 
@@ -24,23 +29,31 @@ interface StandardFormLayoutProps {
 export function StandardFormLayout({
   title,
   subtitle,
+  heroPhotoBackdrop = false,
   children,
 }: StandardFormLayoutProps) {
   return (
     <>
       <link rel="stylesheet" href={GOOGLE_FONTS_CSS_HREF} />
-      <div className={sfPageOuter}>
-        <div className={sfPageBackdrop} aria-hidden />
-        <div className={sfPageRadial} aria-hidden />
+      {heroPhotoBackdrop ? <HeroBlurredBackground /> : null}
+      <div className={clsx(sfPageOuter, heroPhotoBackdrop && 'relative z-10')}>
+        {!heroPhotoBackdrop ? (
+          <>
+            <div className={sfPageBackdrop} aria-hidden />
+            <div className={sfPageRadial} aria-hidden />
+          </>
+        ) : null}
 
         <div className={sfLayoutInner}>
           <header className="text-center">
             <h1 className={sfTitle} style={{ fontFamily: sfFontSerif }}>
               {title}
             </h1>
-            <p className={sfSubtitle} style={{ fontFamily: sfFontSans }}>
-              {subtitle}
-            </p>
+            {subtitle ? (
+              <p className={sfSubtitle} style={{ fontFamily: sfFontSans }}>
+                {subtitle}
+              </p>
+            ) : null}
           </header>
 
           {children}

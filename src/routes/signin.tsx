@@ -11,7 +11,7 @@ import {
   StandardSubmitButton,
   StandardFormFieldTurnstile,
 } from '@/forms/standard-form';
-import { getSessionData } from '@/utils/auth.functions';
+import { getSessionFN } from '@/utils/auth.functions';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
 
 // Zod schema for signin validation
@@ -33,7 +33,7 @@ export const Route = createFileRoute('/signin')({
   }),
   component: SignInPage,
   beforeLoad: async ({ search }) => {
-    const session = await getSessionData();
+    const session = await getSessionFN();
     if (session?.user) {
       throw redirect({ to: search.redirect || '/dashboard' });
     }

@@ -1,5 +1,5 @@
 import { authClient } from '@/lib/auth-client';
-import { getSessionData } from '@/utils/auth.functions';
+import { getSessionFN } from '@/utils/auth.functions';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -9,7 +9,7 @@ import { sfFontSans } from '@/forms/standard-form/shared-classes';
 export const Route = createFileRoute('/signout')({
   component: SignOutPage,
   beforeLoad: async () => {
-    const session = await getSessionData();
+    const session = await getSessionFN();
     if (!session?.user) {
       throw redirect({ to: '/' });
     }
@@ -40,7 +40,8 @@ function SignOutPage() {
     performSignOut();
   }, [navigate]);
 
-  const statusStyles = 'text-[0.9375rem] leading-relaxed font-medium text-white/68';
+  const statusStyles =
+    'text-[0.9375rem] leading-relaxed font-medium text-white/68';
 
   return (
     <StandardFormLayout

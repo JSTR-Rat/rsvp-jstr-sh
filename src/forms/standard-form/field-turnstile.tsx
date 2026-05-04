@@ -19,7 +19,7 @@ export function StandardFormFieldTurnstile({
 }: FormFieldTurnstileProps) {
   return (
     <div className="space-y-2" role="group" aria-label="Security verification">
-      <div className="flex min-h-[2.875rem] w-full overflow-hidden rounded-md border border-white/[0.14] bg-black/35">
+      <div className="flex min-h-11.5 w-full overflow-hidden rounded-md border border-white/[0.14] bg-black/35">
         <Turnstile
           ref={ref}
           options={{

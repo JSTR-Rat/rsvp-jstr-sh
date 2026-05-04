@@ -9,7 +9,7 @@ export const invite = sqliteTable('invite', {
   name: text('name').notNull(),
   diataryRequirements: text('diatary_requirements'),
   status: text('status', {
-    enum: ['not-sent', 'sent', 'seen', 'accepted', 'declined'],
+    enum: ['not-sent', 'sent', 'seen', 'attending', 'not-attending'],
   })
     .default('not-sent')
     .notNull(),

@@ -12,7 +12,7 @@ import {
   StandardSubmitButton,
   StandardFormFieldTurnstile,
 } from '@/forms/standard-form';
-import { getSessionData } from '@/utils/auth.functions';
+import { getSessionFN } from '@/utils/auth.functions';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
 
 const signupSchema = z.object({
@@ -36,7 +36,7 @@ export const Route = createFileRoute('/signup')({
     redirect: z.string().optional(),
   }),
   beforeLoad: async ({ search }) => {
-    const session = await getSessionData();
+    const session = await getSessionFN();
     if (session?.user) {
       throw redirect({ to: search.redirect || '/dashboard' });
     }

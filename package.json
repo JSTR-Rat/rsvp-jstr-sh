@@ -26,6 +26,7 @@
     "@cloudflare/vite-plugin": "^1.13.8",
     "@headlessui/react": "^2.2.10",
     "@marsidev/react-turnstile": "^1.5.0",
+    "@react-email/render": "^2.0.8",
     "@react-spring/web": "^10.0.3",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "^0.7.0",
@@ -42,6 +43,7 @@
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "resend": "^6.12.2",
     "tailwindcss": "^4.2.2",
     "zod": "^4.4.1"
   },

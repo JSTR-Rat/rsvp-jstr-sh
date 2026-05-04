@@ -3,6 +3,7 @@ export { StandardSubmitButton } from './submit-button';
 export { StandardFormLayout } from './layout';
 export { StandardFormShell, StandardFormPanel } from './shell';
 export { StandardFormField } from './field';
+export { StandardFormFieldTextarea } from './field-textarea';
 export { StandardFormFieldFile } from './field-file';
 export { StandardFormFieldRadioGroup } from './field-radio-group';
 export { StandardFormFieldTurnstile } from './field-turnstile';

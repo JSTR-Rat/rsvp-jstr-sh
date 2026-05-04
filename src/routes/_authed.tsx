@@ -9,7 +9,7 @@ import {
 } from '@/forms/standard-form/shared-classes';
 import { requireAuth } from '@/utils/auth.functions';
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router';
-import clsx from 'clsx';
+import { ButtonPrimaryClassName } from '@/components/button-primary';
 
 export const Route = createFileRoute('/_authed')({
   beforeLoad: async ({ location }) => {
@@ -39,13 +39,9 @@ function RouteComponent() {
               </h1>
               <Link
                 to="/signout"
-                className={clsx(
-                  'inline-flex shrink-0 items-center justify-center rounded-md border border-white/[0.2] bg-white/[0.07] px-3.5 py-2',
-                  'text-[0.8125rem] font-medium text-white/92 transition-[border-color,background-color]',
-                  'hover:border-white/[0.3] hover:bg-white/[0.11]',
-                  'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-white/24',
-                )}
+                className={ButtonPrimaryClassName}
                 style={{ fontFamily: sfFontSans }}
+                draggable={false}
               >
                 Sign out
               </Link>

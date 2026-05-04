@@ -341,7 +341,7 @@ function RouteComponent() {
       </div>
       <div
         id="gallery"
-        className="min-h-svh scroll-mt-4 bg-black/80 px-4 py-14 backdrop-blur-lg sm:px-8 sm:py-16"
+        className="min-h-svh bg-black/80 px-4 py-14 backdrop-blur-lg sm:px-8 sm:py-16"
       >
         <div className="mx-auto max-w-6xl text-white">
           <h2
@@ -352,10 +352,6 @@ function RouteComponent() {
           </h2>
           <MosaicGallery
             images={ENGAGEMENT_MOSAIC_IMAGES}
-            // getTileHref={(index) => {
-            //   const id = ENGAGEMENT_GALLERY_ITEMS[index]?.id;
-            //   return id ? `/?image=${encodeURIComponent(id)}` : undefined;
-            // }}
             onTileClick={(index) => {
               const id = ENGAGEMENT_GALLERY_ITEMS[index]?.id;
               navigate({ to: '.', search: { image: id }, resetScroll: false });

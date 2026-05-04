@@ -54,7 +54,13 @@ export function StandardFormFieldRadioGroup({
       </p>
       <RadioGroup
         value={field.state.value}
-        onChange={(value) => field.handleChange(value)}
+        onChange={(value) => {
+          // Headless UI may emit onChange when syncing the controlled value; TanStack
+          // treats every handleChange as user input (isDirty / isTouched). Ignore no-ops.
+          if (value === field.state.value) return;
+          field.handleChange(value);
+        }}
+        onBlur={field.handleBlur}
         className={clsx(
           'flex divide-x divide-white/12 overflow-hidden rounded-full border border-white/16',
           'bg-black/35 backdrop-blur-sm',

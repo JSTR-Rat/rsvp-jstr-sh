@@ -15,9 +15,14 @@ import { Route as SignoutRouteImport } from './routes/signout'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InvitationInviteIDRouteImport } from './routes/invitation.$inviteID'
 import { Route as AuthedDashboardRouteRouteImport } from './routes/_authed.dashboard.route'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed.dashboard.index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as AuthedDashboardInvitesNewRouteImport } from './routes/_authed.dashboard.invites.new'
+import { Route as AuthedDashboardInvitesInviteIDRouteImport } from './routes/_authed.dashboard.invites.$inviteID'
+import { Route as AuthedDashboardInvitesInviteIDIndexRouteImport } from './routes/_authed.dashboard.invites.$inviteID.index'
+import { Route as AuthedDashboardInvitesInviteIDEditRouteImport } from './routes/_authed.dashboard.invites.$inviteID.edit'
 
 const TestAuthRoute = TestAuthRouteImport.update({
   id: '/test-auth',
@@ -48,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvitationInviteIDRoute = InvitationInviteIDRouteImport.update({
+  id: '/invitation/$inviteID',
+  path: '/invitation/$inviteID',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedDashboardRouteRoute = AuthedDashboardRouteRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -63,6 +73,30 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedDashboardInvitesNewRoute =
+  AuthedDashboardInvitesNewRouteImport.update({
+    id: '/invites/new',
+    path: '/invites/new',
+    getParentRoute: () => AuthedDashboardRouteRoute,
+  } as any)
+const AuthedDashboardInvitesInviteIDRoute =
+  AuthedDashboardInvitesInviteIDRouteImport.update({
+    id: '/invites/$inviteID',
+    path: '/invites/$inviteID',
+    getParentRoute: () => AuthedDashboardRouteRoute,
+  } as any)
+const AuthedDashboardInvitesInviteIDIndexRoute =
+  AuthedDashboardInvitesInviteIDIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedDashboardInvitesInviteIDRoute,
+  } as any)
+const AuthedDashboardInvitesInviteIDEditRoute =
+  AuthedDashboardInvitesInviteIDEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthedDashboardInvitesInviteIDRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,8 +105,13 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/test-auth': typeof TestAuthRoute
   '/dashboard': typeof AuthedDashboardRouteRouteWithChildren
+  '/invitation/$inviteID': typeof InvitationInviteIDRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
+  '/dashboard/invites/$inviteID': typeof AuthedDashboardInvitesInviteIDRouteWithChildren
+  '/dashboard/invites/new': typeof AuthedDashboardInvitesNewRoute
+  '/dashboard/invites/$inviteID/edit': typeof AuthedDashboardInvitesInviteIDEditRoute
+  '/dashboard/invites/$inviteID/': typeof AuthedDashboardInvitesInviteIDIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -80,8 +119,12 @@ export interface FileRoutesByTo {
   '/signout': typeof SignoutRoute
   '/signup': typeof SignupRoute
   '/test-auth': typeof TestAuthRoute
+  '/invitation/$inviteID': typeof InvitationInviteIDRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
+  '/dashboard/invites/new': typeof AuthedDashboardInvitesNewRoute
+  '/dashboard/invites/$inviteID/edit': typeof AuthedDashboardInvitesInviteIDEditRoute
+  '/dashboard/invites/$inviteID': typeof AuthedDashboardInvitesInviteIDIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -92,8 +135,13 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/test-auth': typeof TestAuthRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteRouteWithChildren
+  '/invitation/$inviteID': typeof InvitationInviteIDRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
+  '/_authed/dashboard/invites/$inviteID': typeof AuthedDashboardInvitesInviteIDRouteWithChildren
+  '/_authed/dashboard/invites/new': typeof AuthedDashboardInvitesNewRoute
+  '/_authed/dashboard/invites/$inviteID/edit': typeof AuthedDashboardInvitesInviteIDEditRoute
+  '/_authed/dashboard/invites/$inviteID/': typeof AuthedDashboardInvitesInviteIDIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -104,8 +152,13 @@ export interface FileRouteTypes {
     | '/signup'
     | '/test-auth'
     | '/dashboard'
+    | '/invitation/$inviteID'
     | '/api/auth/$'
     | '/dashboard/'
+    | '/dashboard/invites/$inviteID'
+    | '/dashboard/invites/new'
+    | '/dashboard/invites/$inviteID/edit'
+    | '/dashboard/invites/$inviteID/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -113,8 +166,12 @@ export interface FileRouteTypes {
     | '/signout'
     | '/signup'
     | '/test-auth'
+    | '/invitation/$inviteID'
     | '/api/auth/$'
     | '/dashboard'
+    | '/dashboard/invites/new'
+    | '/dashboard/invites/$inviteID/edit'
+    | '/dashboard/invites/$inviteID'
   id:
     | '__root__'
     | '/'
@@ -124,8 +181,13 @@ export interface FileRouteTypes {
     | '/signup'
     | '/test-auth'
     | '/_authed/dashboard'
+    | '/invitation/$inviteID'
     | '/api/auth/$'
     | '/_authed/dashboard/'
+    | '/_authed/dashboard/invites/$inviteID'
+    | '/_authed/dashboard/invites/new'
+    | '/_authed/dashboard/invites/$inviteID/edit'
+    | '/_authed/dashboard/invites/$inviteID/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -135,6 +197,7 @@ export interface RootRouteChildren {
   SignoutRoute: typeof SignoutRoute
   SignupRoute: typeof SignupRoute
   TestAuthRoute: typeof TestAuthRoute
+  InvitationInviteIDRoute: typeof InvitationInviteIDRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -182,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invitation/$inviteID': {
+      id: '/invitation/$inviteID'
+      path: '/invitation/$inviteID'
+      fullPath: '/invitation/$inviteID'
+      preLoaderRoute: typeof InvitationInviteIDRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/dashboard': {
       id: '/_authed/dashboard'
       path: '/dashboard'
@@ -203,15 +273,66 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/dashboard/invites/new': {
+      id: '/_authed/dashboard/invites/new'
+      path: '/invites/new'
+      fullPath: '/dashboard/invites/new'
+      preLoaderRoute: typeof AuthedDashboardInvitesNewRouteImport
+      parentRoute: typeof AuthedDashboardRouteRoute
+    }
+    '/_authed/dashboard/invites/$inviteID': {
+      id: '/_authed/dashboard/invites/$inviteID'
+      path: '/invites/$inviteID'
+      fullPath: '/dashboard/invites/$inviteID'
+      preLoaderRoute: typeof AuthedDashboardInvitesInviteIDRouteImport
+      parentRoute: typeof AuthedDashboardRouteRoute
+    }
+    '/_authed/dashboard/invites/$inviteID/': {
+      id: '/_authed/dashboard/invites/$inviteID/'
+      path: '/'
+      fullPath: '/dashboard/invites/$inviteID/'
+      preLoaderRoute: typeof AuthedDashboardInvitesInviteIDIndexRouteImport
+      parentRoute: typeof AuthedDashboardInvitesInviteIDRoute
+    }
+    '/_authed/dashboard/invites/$inviteID/edit': {
+      id: '/_authed/dashboard/invites/$inviteID/edit'
+      path: '/edit'
+      fullPath: '/dashboard/invites/$inviteID/edit'
+      preLoaderRoute: typeof AuthedDashboardInvitesInviteIDEditRouteImport
+      parentRoute: typeof AuthedDashboardInvitesInviteIDRoute
+    }
   }
 }
 
+interface AuthedDashboardInvitesInviteIDRouteChildren {
+  AuthedDashboardInvitesInviteIDEditRoute: typeof AuthedDashboardInvitesInviteIDEditRoute
+  AuthedDashboardInvitesInviteIDIndexRoute: typeof AuthedDashboardInvitesInviteIDIndexRoute
+}
+
+const AuthedDashboardInvitesInviteIDRouteChildren: AuthedDashboardInvitesInviteIDRouteChildren =
+  {
+    AuthedDashboardInvitesInviteIDEditRoute:
+      AuthedDashboardInvitesInviteIDEditRoute,
+    AuthedDashboardInvitesInviteIDIndexRoute:
+      AuthedDashboardInvitesInviteIDIndexRoute,
+  }
+
+const AuthedDashboardInvitesInviteIDRouteWithChildren =
+  AuthedDashboardInvitesInviteIDRoute._addFileChildren(
+    AuthedDashboardInvitesInviteIDRouteChildren,
+  )
+
 interface AuthedDashboardRouteRouteChildren {
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
+  AuthedDashboardInvitesInviteIDRoute: typeof AuthedDashboardInvitesInviteIDRouteWithChildren
+  AuthedDashboardInvitesNewRoute: typeof AuthedDashboardInvitesNewRoute
 }
 
 const AuthedDashboardRouteRouteChildren: AuthedDashboardRouteRouteChildren = {
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
+  AuthedDashboardInvitesInviteIDRoute:
+    AuthedDashboardInvitesInviteIDRouteWithChildren,
+  AuthedDashboardInvitesNewRoute: AuthedDashboardInvitesNewRoute,
 }
 
 const AuthedDashboardRouteRouteWithChildren =
@@ -235,6 +356,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignoutRoute: SignoutRoute,
   SignupRoute: SignupRoute,
   TestAuthRoute: TestAuthRoute,
+  InvitationInviteIDRoute: InvitationInviteIDRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
