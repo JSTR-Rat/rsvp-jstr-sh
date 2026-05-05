@@ -54,8 +54,8 @@ function RouteComponent() {
               className="text-[0.9375rem] leading-relaxed text-white/65"
               style={{ fontFamily: sfFontSans }}
             >
-              Guests and RSVP status. Share each person&apos;s link from your own
-              email when you&apos;re ready.
+              Guests and RSVP status. Share each person&apos;s link from your
+              own email when you&apos;re ready.
             </p>
           </div>
           <Link
@@ -87,7 +87,7 @@ function RouteComponent() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-left text-[0.8125rem]">
               <thead>
-                <tr className="border-b border-white/12 bg-white/[0.04]">
+                <tr className="border-b border-white/12 bg-white/4">
                   <th
                     className="px-4 py-3 font-medium tracking-wide text-white/72"
                     style={{ fontFamily: sfFontSans }}
@@ -124,7 +124,7 @@ function RouteComponent() {
                 {invites.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-b border-white/[0.06] last:border-b-0"
+                    className="border-b border-white/6 last:border-b-0"
                   >
                     <td
                       className="max-w-[180px] truncate px-4 py-3 font-medium text-white/92"
@@ -147,7 +147,7 @@ function RouteComponent() {
                       {row.email}
                     </td>
                     <td
-                      className="whitespace-nowrap px-4 py-3 text-white/70"
+                      className="px-4 py-3 whitespace-nowrap text-white/70"
                       style={{ fontFamily: sfFontSans }}
                     >
                       {inviteStatusLabel(row.status)}

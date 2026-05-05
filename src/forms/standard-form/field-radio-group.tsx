@@ -20,11 +20,11 @@ function radioOptionClass(state: {
     'grow px-3 py-2 text-center transition-[background-color,color,box-shadow] sm:px-4',
     'text-[0.8125rem] font-medium tracking-tight outline-none focus:outline-none',
     state.checked
-      ? 'bg-white/[0.88] text-slate-900 shadow-sm shadow-black/35'
-      : 'text-white/65 hover:bg-white/[0.05] hover:text-white/82',
+      ? 'bg-white/88 text-slate-900 shadow-sm shadow-black/35'
+      : 'text-white/65 hover:bg-white/5 hover:text-white/82',
     state.checked && state.hover ? 'bg-white text-slate-900' : null,
     state.focus
-      ? 'ring-[2px] ring-white/42 ring-inset'
+      ? 'ring-2 ring-white/42 ring-inset'
       : state.checked
         ? 'ring-[1px] ring-white/18 ring-inset'
         : null,
