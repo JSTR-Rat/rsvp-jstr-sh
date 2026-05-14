@@ -8,9 +8,11 @@ interface FormFieldRadioGroupProps {
   field: AnyFieldApi;
   label: string;
   options: { label: string; value: string }[];
+  /** `segmented`: pill row (short labels). `stacked`: full-width cards for longer copy. */
+  variant?: 'segmented' | 'stacked';
 }
 
-function radioOptionClass(state: {
+function segmentedRadioOptionClass(state: {
   checked: boolean;
   focus: boolean;
   hover: boolean;
@@ -33,6 +35,31 @@ function radioOptionClass(state: {
   );
 }
 
+function stackedRadioOptionClass(state: {
+  checked: boolean;
+  focus: boolean;
+  hover: boolean;
+  disabled: boolean;
+}) {
+  return clsx(
+    'w-full rounded-lg border px-3 py-2.5 text-left transition-[background-color,color,box-shadow,border-color]',
+    'text-[0.8125rem] leading-snug font-medium tracking-tight outline-none focus:outline-none sm:px-3.5 sm:py-3',
+    state.checked
+      ? 'border-white/28 bg-white/88 text-slate-900 shadow-sm shadow-black/25'
+      : 'border-white/14 bg-black/28 text-white/72 hover:border-white/22 hover:bg-black/38 hover:text-white/88',
+    state.checked && state.hover
+      ? 'border-white/35 bg-white text-slate-900'
+      : null,
+    state.focus
+      ? 'ring-2 ring-white/42 ring-offset-2 ring-offset-transparent'
+      : state.checked
+        ? 'ring-1 ring-white/14 ring-inset'
+        : null,
+    state.checked && state.focus ? 'ring-slate-600/44' : null,
+    state.disabled ? 'pointer-events-none opacity-35' : 'cursor-pointer',
+  );
+}
+
 /**
  * Segmented radios — restrained contrast consistent with landing glass UI.
  */
@@ -40,14 +67,16 @@ export function StandardFormFieldRadioGroup({
   field,
   label,
   options,
+  variant = 'segmented',
 }: FormFieldRadioGroupProps) {
   const labelId = `radio-label-${field.name}`;
+  const isStacked = variant === 'stacked';
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <p
         id={labelId}
-        className={clsx(sfLabel, 'm-0')}
+        className={clsx(sfLabel, 'mb-1')}
         style={{ fontFamily: sfFontSans }}
       >
         {label}
@@ -61,17 +90,23 @@ export function StandardFormFieldRadioGroup({
           field.handleChange(value);
         }}
         onBlur={field.handleBlur}
-        className={clsx(
-          'flex divide-x divide-white/12 overflow-hidden rounded-full border border-white/16',
-          'bg-black/35 backdrop-blur-sm',
-        )}
+        className={
+          isStacked
+            ? 'flex flex-col gap-2'
+            : clsx(
+                'flex divide-x divide-white/12 overflow-hidden rounded-full border border-white/16',
+                'bg-black/35 backdrop-blur-sm',
+              )
+        }
         aria-labelledby={labelId}
       >
         {options.map((option) => (
           <Radio
             key={option.value}
             value={option.value}
-            className={radioOptionClass}
+            className={
+              isStacked ? stackedRadioOptionClass : segmentedRadioOptionClass
+            }
             style={{ fontFamily: sfFontSans }}
           >
             <span className="pointer-events-none select-none">

@@ -7,6 +7,7 @@ import {
   sfFontSerif,
   sfLabel,
 } from '@/forms/standard-form/shared-classes';
+import { mealChoiceLabel } from '@/lib/wedding-meal-options';
 import {
   adminDeleteInviteFN,
   adminGetInviteDetailFN,
@@ -121,25 +122,60 @@ function RouteComponent() {
 
   const responseSummary = (() => {
     switch (inviteRow.status) {
-      case 'attending':
+      case 'attending': {
+        const mealLabel = mealChoiceLabel(inviteRow.mealChoice);
         return (
           <>
             <span className="text-emerald-300/95">Attending</span>
+            {mealLabel ? (
+              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+                Meal choice: {mealLabel}
+              </p>
+            ) : (
+              <p className="mt-2 text-[0.875rem] text-white/55">
+                No meal choice recorded.
+              </p>
+            )}
             {inviteRow.diataryRequirements ? (
               <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
-                Dietary notes: {inviteRow.diataryRequirements}
+                Dietary requirements: {inviteRow.diataryRequirements}
               </p>
             ) : (
               <p className="mt-2 text-[0.875rem] text-white/55">
                 No dietary notes submitted.
               </p>
             )}
+            {inviteRow.additionalNotes ? (
+              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+                Additional notes: {inviteRow.additionalNotes}
+              </p>
+            ) : null}
           </>
         );
-      case 'not-attending':
+      }
+      case 'not-attending': {
+        const mealLabel = mealChoiceLabel(inviteRow.mealChoice);
         return (
-          <span className="text-amber-200/95">Unable to attend</span>
+          <>
+            <span className="text-amber-200/95">Unable to attend</span>
+            {mealLabel ? (
+              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+                Meal choice: {mealLabel}
+              </p>
+            ) : null}
+            {inviteRow.diataryRequirements?.trim() ? (
+              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+                Dietary requirements: {inviteRow.diataryRequirements}
+              </p>
+            ) : null}
+            {inviteRow.additionalNotes?.trim() ? (
+              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+                Additional notes: {inviteRow.additionalNotes}
+              </p>
+            ) : null}
+          </>
         );
+      }
       default:
         return (
           <span className="text-white/62">

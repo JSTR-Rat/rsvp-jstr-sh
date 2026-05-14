@@ -1,6 +1,6 @@
 import { useForm, useStore } from '@tanstack/react-form';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
+import { useMemo, useLayoutEffect, useState } from 'react';
 import { z } from 'zod';
 import {
   StandardFormFieldRadioGroup,
@@ -17,17 +17,27 @@ import {
   sfShell,
 } from '@/forms/standard-form/shared-classes';
 import clsx from 'clsx';
-import { ButtonPrimaryClassName } from '@/components/button-primary';
+import {
+  ButtonPrimary,
+  ButtonPrimaryClassName,
+} from '@/components/button-primary';
 import {
   HERO_BLURRED_BG_DESKTOP,
   HERO_BLURRED_BG_MOBILE,
 } from '@/components/hero-blurred-background';
 import { ENGAGEMENT_MOSAIC_IMAGES } from '@/lib/engagement-gallery-data';
 import {
+  MEAL_CHOICE_OPTIONS,
+  mealChoiceIdSchema,
+  mealChoiceLabel,
+  type MealChoiceId,
+} from '@/lib/wedding-meal-options';
+import {
   getInviteDetailsFN,
   markInviteSeenFN,
   updateInviteResponseFN,
 } from '@/utils/invite.functions';
+import { SpotifySongRequestPicker } from '@/components/spotify-song-request-picker';
 
 const PAGE_TITLE = 'Wade & Vada - RSVP';
 const PAGE_DESCRIPTION =
@@ -114,24 +124,181 @@ const VENUE_ADDRESS_LINE_2 = 'Gold Coast, Queensland';
 const EVENT_WHEN_PRIMARY = 'Saturday 21 November 2026';
 const EVENT_WHEN_TIME = '4:00 PM';
 
+function InvitationInviteeGreeting({ name }: { name: string }) {
+  return (
+    <p
+      className="mx-auto max-w-2xl text-center text-[0.9375rem] leading-relaxed text-white/82"
+      style={{ fontFamily: sfFontSans }}
+    >
+      Hi {name}, we would like to invite you to celebrate with us.
+    </p>
+  );
+}
+
+function InvitationSummaryLead({
+  guestName,
+  isJustSubmitted,
+  attending,
+}: {
+  guestName: string;
+  isJustSubmitted: boolean;
+  attending: boolean;
+}) {
+  return (
+    <div
+      className="mx-auto max-w-2xl text-center"
+      role="status"
+      aria-live="polite"
+    >
+      {isJustSubmitted ? (
+        <p
+          className="text-[0.9375rem] leading-relaxed text-white/78"
+          style={{ fontFamily: sfFontSans }}
+        >
+          {attending ? (
+            <>
+              We're grateful you can join us and can't wait to celebrate
+              together. Further details will follow closer to the date.
+            </>
+          ) : (
+            <>
+              Thank you for letting us know. We'll miss you on the day.
+              Wishing you well, and we hope our paths cross again soon.
+            </>
+          )}
+        </p>
+      ) : (
+        <p
+          className="text-[0.9375rem] leading-relaxed text-white/82"
+          style={{ fontFamily: sfFontSans }}
+        >
+          {attending ? (
+            <>Hi {guestName}, we're grateful you can join us.</>
+          ) : (
+            <>
+              Hi {guestName}, thanks for letting us know you can't make it.
+            </>
+          )}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function InvitationVenueDetailsCard() {
+  return (
+    <div
+      className={clsx(sfShell, 'min-w-0 space-y-5')}
+      style={{ fontFamily: sfFontSans }}
+    >
+      <h2
+        className="text-center text-[1.125rem] font-medium leading-snug tracking-tight text-white/94 sm:text-[1.1875rem]"
+        style={{ fontFamily: sfFontSerif }}
+      >
+        Event details
+      </h2>
+
+      <div className="space-y-1">
+        <p className={sfLabel} style={{ fontFamily: sfFontSans }}>
+          When
+        </p>
+        <p
+          className="text-[1.05rem] leading-snug font-medium text-white/92 sm:text-[1.125rem]"
+          style={{ fontFamily: sfFontSerif }}
+        >
+          {EVENT_WHEN_PRIMARY}
+        </p>
+        <p className="text-[0.9rem] text-white/68">{EVENT_WHEN_TIME}</p>
+      </div>
+
+      <div className="space-y-3">
+        <p
+          className="block text-[0.66rem] font-medium tracking-[0.22em] text-white/86 uppercase"
+          style={{ fontFamily: sfFontSans }}
+        >
+          Venue
+        </p>
+        <div className="space-y-0.5">
+          <p
+            className="text-[1.05rem] leading-snug font-medium text-white/92 sm:text-[1.125rem]"
+            style={{ fontFamily: sfFontSerif }}
+          >
+            {VENUE_NAME}
+          </p>
+          <p className="text-[0.9rem] leading-snug text-white/72">
+            {VENUE_ADDRESS_LINE_1}
+          </p>
+          <p className="text-[0.9rem] leading-snug text-white/68">
+            {VENUE_ADDRESS_LINE_2}
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <a
+            href={VENUE_MAPS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={ButtonPrimaryClassName}
+            style={{ fontFamily: sfFontSans }}
+          >
+            Open venue in Maps
+          </a>
+          <a
+            href={VENUE_WEBSITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={ButtonPrimaryClassName}
+            style={{ fontFamily: sfFontSans }}
+          >
+            Greendays website
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Mosaic indices for thank-you strip: varied crops; all link to `#gallery`. */
 const THANK_YOU_GALLERY_PREVIEW: readonly [number, number, number] = [0, 5, 10];
 
-const invitationSchema = z.object({
-  rsvpStatus: z
-    .union([z.literal('attending'), z.literal('unable'), z.literal('')])
-    .refine((v) => v === 'attending' || v === 'unable', {
-      message: 'Please select whether you will attend.',
-    }),
-  dietaryRequirements: z
-    .string()
-    .max(2000, 'Please keep dietary notes under 2000 characters.'),
-});
+const invitationSchema = z
+  .object({
+    rsvpStatus: z
+      .union([z.literal('attending'), z.literal('unable'), z.literal('')])
+      .refine((v) => v === 'attending' || v === 'unable', {
+        message: 'Please select whether you will attend.',
+      }),
+    mealChoice: z.union([mealChoiceIdSchema, z.literal('')]),
+    dietaryRequirements: z
+      .string()
+      .max(2000, 'Please keep dietary notes under 2000 characters.'),
+    additionalNotes: z
+      .string()
+      .max(2000, 'Please keep additional notes under 2000 characters.'),
+  })
+  .superRefine((data, ctx) => {
+    if (data.rsvpStatus === 'attending' && data.mealChoice === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please select a meal choice.',
+        path: ['mealChoice'],
+      });
+    }
+  });
 
 type InvitationFormValues = {
   rsvpStatus: 'attending' | 'unable' | '';
+  mealChoice: MealChoiceId | '';
   dietaryRequirements: string;
+  additionalNotes: string;
 };
+
+function inviteDbMealChoiceToFormValue(
+  raw: string | null | undefined,
+): MealChoiceId | '' {
+  if (raw === null || raw === undefined || raw === '') return '';
+  const parsed = mealChoiceIdSchema.safeParse(raw);
+  return parsed.success ? parsed.data : '';
+}
 
 /** Matches `invite.status` in `src/db/schema/invite.ts`. */
 type InviteDbStatus =
@@ -177,34 +344,57 @@ const thankYouGalleryLinkClass = clsx(
   'focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-white/45 focus-visible:outline-none',
 );
 
-function ThankYouBody({
-  lastSubmission,
-}: {
-  lastSubmission: InvitationSubmission | null;
-}) {
+function EngagementGallerySection() {
   const previews = THANK_YOU_GALLERY_PREVIEW.map(
     (i) => ENGAGEMENT_MOSAIC_IMAGES[i],
   );
 
   return (
-    <div className="w-full space-y-10">
-      <div className="space-y-5 text-center" role="status" aria-live="polite">
+    <div className="w-full space-y-3">
+      <div className="space-y-2 text-center">
         <p
-          className="text-[0.9375rem] leading-relaxed text-white/78"
+          className="block text-[0.66rem] font-medium tracking-[0.22em] text-white/86 uppercase"
           style={{ fontFamily: sfFontSans }}
         >
-          {lastSubmission?.rsvpStatus === 'unable' ? (
-            <>
-              Thank you for letting us know. We'll miss you on the day. Wishing
-              you well, and we hope our paths cross again soon.
-            </>
-          ) : (
-            <>
-              We're grateful you can join us and can't wait to celebrate
-              together. Further details will follow closer to the date.
-            </>
-          )}
+          Engagement
         </p>
+        <p
+          className="text-[0.8125rem] leading-snug text-white/74"
+          style={{ fontFamily: sfFontSans }}
+        >
+          A few moments from our session.
+        </p>
+      </div>
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        {previews.map((img, idx) => (
+          <Link
+            key={img.src}
+            to="/"
+            hash="gallery"
+            resetScroll={false}
+            aria-label={`Open the engagement gallery${
+              previews.length > 1 ? ` (photo ${idx + 1})` : ''
+            }`}
+            className={clsx(
+              'group relative aspect-3/4 overflow-hidden rounded-md outline-none',
+              'ring-1 ring-white/10 transition-[ring-color,transform] duration-200',
+              'hover:ring-white/22 hover:brightness-105',
+              'focus-visible:ring-2 focus-visible:ring-white/45',
+            )}
+          >
+            <img
+              src={img.src}
+              alt={img.alt}
+              loading="lazy"
+              decoding="async"
+              className="size-full object-cover transition duration-300 group-hover:scale-[1.04]"
+              width={img.width}
+              height={img.height}
+            />
+          </Link>
+        ))}
+      </div>
+      <div className="w-full text-center">
         <Link
           to="/"
           hash="gallery"
@@ -217,54 +407,128 @@ function ThankYouBody({
           Browse the gallery
         </Link>
       </div>
-
-      <div className="space-y-3 border-t border-white/15 pt-10">
-        <div className="space-y-2">
-          <p
-            className="block text-center text-[0.66rem] font-medium tracking-[0.22em] text-white/86 uppercase"
-            style={{ fontFamily: sfFontSans }}
-          >
-            Engagement
-          </p>
-          <p
-            className="text-center text-[0.8125rem] leading-snug text-white/74"
-            style={{ fontFamily: sfFontSans }}
-          >
-            A few moments from our session; each opens the gallery.
-          </p>
-        </div>
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-          {previews.map((img, idx) => (
-            <Link
-              key={img.src}
-              to="/"
-              hash="gallery"
-              resetScroll={false}
-              aria-label={`Open the engagement gallery${
-                previews.length > 1 ? ` (photo ${idx + 1})` : ''
-              }`}
-              className={clsx(
-                'group relative aspect-3/4 overflow-hidden rounded-md outline-none',
-                'ring-1 ring-white/10 transition-[ring-color,transform] duration-200',
-                'hover:ring-white/22 hover:brightness-105',
-                'focus-visible:ring-2 focus-visible:ring-white/45',
-              )}
-            >
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                decoding="async"
-                className="size-full object-cover transition duration-300 group-hover:scale-[1.04]"
-                width={img.width}
-                height={img.height}
-              />
-            </Link>
-          ))}
-        </div>
-      </div>
     </div>
   );
+}
+
+type InviteDetailsFromLoader = {
+  name: string;
+  status: string;
+  mealChoice: string | null;
+  diataryRequirements: string | null;
+  additionalNotes: string | null;
+};
+
+function RSVPSummary({
+  inviteDetails,
+  onEdit,
+}: {
+  inviteDetails: InviteDetailsFromLoader;
+  onEdit: () => void;
+}) {
+  const dbStatus = inviteDetails.status as InviteDbStatus;
+  const attending = dbStatus === 'attending';
+
+  return (
+    <div className={clsx(sfShell, 'w-full space-y-6')}>
+        <h2
+          className="text-center text-[1.125rem] font-medium leading-snug tracking-tight text-white/94 sm:text-[1.1875rem]"
+          style={{ fontFamily: sfFontSerif }}
+        >
+          Your details
+        </h2>
+
+        <div
+          className={clsx(
+            'rounded-lg border border-white/14 bg-black/28 p-4 backdrop-blur-sm sm:p-5',
+          )}
+        >
+          <dl className="space-y-3 text-left">
+            <div className="space-y-1">
+              <dt className={sfLabel} style={{ fontFamily: sfFontSans }}>
+                Response
+              </dt>
+              <dd
+                className="text-[0.9375rem] leading-snug text-white/85"
+                style={{ fontFamily: sfFontSans }}
+              >
+                {attending ? 'Attending' : 'Unable to attend'}
+              </dd>
+            </div>
+            {attending ? (
+              <>
+                <div className="space-y-1">
+                  <dt className={sfLabel} style={{ fontFamily: sfFontSans }}>
+                    Meal choice
+                  </dt>
+                  <dd
+                    className="text-[0.9375rem] leading-snug text-white/85"
+                    style={{ fontFamily: sfFontSans }}
+                  >
+                    {mealChoiceLabel(inviteDetails.mealChoice) ??
+                      'Not recorded'}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className={sfLabel} style={{ fontFamily: sfFontSans }}>
+                    Dietary requirements
+                  </dt>
+                  <dd
+                    className="text-[0.9375rem] leading-snug text-white/85"
+                    style={{ fontFamily: sfFontSans }}
+                  >
+                    {inviteDetails.diataryRequirements?.trim()
+                      ? inviteDetails.diataryRequirements
+                      : 'None specified'}
+                  </dd>
+                </div>
+                {inviteDetails.additionalNotes?.trim() ? (
+                  <div className="space-y-1">
+                    <dt
+                      className={sfLabel}
+                      style={{ fontFamily: sfFontSans }}
+                    >
+                      Additional notes
+                    </dt>
+                    <dd
+                      className="text-[0.9375rem] leading-snug whitespace-pre-wrap text-white/85"
+                      style={{ fontFamily: sfFontSans }}
+                    >
+                      {inviteDetails.additionalNotes}
+                    </dd>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </dl>
+        </div>
+
+        <p
+          className="text-center text-[0.8125rem] leading-snug text-white/50"
+          style={{ fontFamily: sfFontSans }}
+        >
+          Need to change something? You can update your reply using{' '}
+          <span className="text-white/64">Edit RSVP</span> below.
+        </p>
+
+        <ButtonPrimary type="button" className="w-full" onClick={onEdit}>
+          Edit RSVP
+        </ButtonPrimary>
+    </div>
+  );
+}
+
+/** Scroll viewport after RSVP transitions (successful submit / edit). */
+function scrollInvitationDocToTop() {
+  const run = () => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+  run();
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(run);
+  });
 }
 
 export const Route = createFileRoute('/invitation/$inviteID')({
@@ -308,6 +572,7 @@ export const Route = createFileRoute('/invitation/$inviteID')({
 });
 
 function RouteComponent() {
+  const router = useRouter();
   const { inviteDetails } = Route.useLoaderData();
 
   const dbStatus = inviteDetails.status as InviteDbStatus;
@@ -316,14 +581,27 @@ function RouteComponent() {
   const initialFormValues = useMemo((): InvitationFormValues => {
     return {
       rsvpStatus: inviteDbStatusToFormRsvpStatus(dbStatus),
+      mealChoice: inviteDbMealChoiceToFormValue(inviteDetails.mealChoice),
       dietaryRequirements: inviteDetails.diataryRequirements ?? '',
+      additionalNotes: inviteDetails.additionalNotes ?? '',
     };
-  }, [dbStatus, inviteDetails.diataryRequirements]);
+  }, [
+    dbStatus,
+    inviteDetails.additionalNotes,
+    inviteDetails.diataryRequirements,
+    inviteDetails.mealChoice,
+  ]);
 
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
-  const [lastSubmission, setLastSubmission] =
-    useState<InvitationSubmission | null>(null);
+  const [isEditingRsvp, setIsEditingRsvp] = useState(false);
+
+  const showSubmittedSummary =
+    priorSubmitted && !submitSucceeded && !isEditingRsvp;
+
+  const showRsvpSummaryUi = submitSucceeded || showSubmittedSummary;
+
+  const layoutTitle = 'Wade & Vada';
 
   const form = useForm({
     defaultValues: initialFormValues,
@@ -337,16 +615,25 @@ function RouteComponent() {
         if (!parsed.success) {
           return;
         }
-        const updateResult = await updateInviteResponseFN({
+        const attending = parsed.data.rsvpStatus === 'attending';
+        await updateInviteResponseFN({
           data: {
             id: inviteDetails.id,
-            isAttending: parsed.data.rsvpStatus === 'attending',
-            dietaryRequirements: parsed.data.dietaryRequirements,
+            isAttending: attending,
+            dietaryRequirements: attending
+              ? parsed.data.dietaryRequirements.trim() || null
+              : null,
+            mealChoice: attending
+              ? mealChoiceIdSchema.parse(parsed.data.mealChoice)
+              : null,
+            additionalNotes: attending
+              ? parsed.data.additionalNotes.trim() || null
+              : null,
           },
         });
-        console.log({ updateResult });
-        setLastSubmission(parsed.data);
+        await router.invalidate();
         setSubmitSucceeded(true);
+        setIsEditingRsvp(false);
       } catch (err: unknown) {
         console.error('RSVP submission error:', err);
         setServerError(
@@ -358,174 +645,185 @@ function RouteComponent() {
 
   const rsvpStatus = useStore(form.store, (s) => s.values.rsvpStatus);
 
+  const invitationTwoColumnGrid =
+    'grid w-full grid-cols-1 gap-10 lg:grid-cols-2 lg:items-start lg:gap-x-10 xl:gap-x-12';
+  /** Second grid column — `min-w-0` avoids overflow in two-column layouts. */
+  const invitationSecondPane = 'min-w-0';
+
+  useLayoutEffect(() => {
+    if (!submitSucceeded) return;
+    scrollInvitationDocToTop();
+  }, [submitSucceeded]);
+
   return (
     <StandardFormLayout
       heroPhotoBackdrop
-      title={submitSucceeded ? 'So glad to hear from you' : 'Wade & Vada'}
-      subtitle={
-        submitSucceeded
-          ? undefined
-          : 'We would be honoured to celebrate with you.'
-      }
+      contentVerticalAlign={showRsvpSummaryUi ? 'start' : 'center'}
+      contentInnerWidth="wide"
+      title={layoutTitle}
     >
-      {submitSucceeded ? (
-        <ThankYouBody lastSubmission={lastSubmission} />
-      ) : (
-        <>
-          <div
-            className={clsx(sfShell, 'space-y-5')}
-            style={{ fontFamily: sfFontSans }}
-          >
-            <p
-              className="text-[0.9375rem] leading-relaxed text-white/82"
-              style={{ fontFamily: sfFontSans }}
-            >
-              Hi {inviteDetails.name}, we would like to invite you to celebrate
-              with us.
-            </p>
-
-            <div className="space-y-1">
-              <p className={sfLabel} style={{ fontFamily: sfFontSans }}>
-                When
-              </p>
-              <p
-                className="text-[1.05rem] leading-snug font-medium text-white/92 sm:text-[1.125rem]"
-                style={{ fontFamily: sfFontSerif }}
-              >
-                {EVENT_WHEN_PRIMARY}
-              </p>
-              <p className="text-[0.9rem] text-white/68">{EVENT_WHEN_TIME}</p>
+      {showRsvpSummaryUi ? (
+        <div className="w-full space-y-10 xl:space-y-14">
+          <InvitationSummaryLead
+            guestName={inviteDetails.name}
+            isJustSubmitted={submitSucceeded}
+            attending={dbStatus === 'attending'}
+          />
+          <div className={invitationTwoColumnGrid}>
+            <div className="min-w-0">
+              <InvitationVenueDetailsCard />
             </div>
-
-            <div className="space-y-3">
-              <p className={sfLabel} style={{ fontFamily: sfFontSans }}>
-                Venue
-              </p>
-              <div className="space-y-0.5">
-                <p
-                  className="text-[1.05rem] leading-snug font-medium text-white/92 sm:text-[1.125rem]"
-                  style={{ fontFamily: sfFontSerif }}
-                >
-                  {VENUE_NAME}
-                </p>
-                <p className="text-[0.9rem] leading-snug text-white/72">
-                  {VENUE_ADDRESS_LINE_1}
-                </p>
-                <p className="text-[0.9rem] leading-snug text-white/68">
-                  {VENUE_ADDRESS_LINE_2}
-                </p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <a
-                  href={VENUE_MAPS_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={ButtonPrimaryClassName}
-                  style={{ fontFamily: sfFontSans }}
-                >
-                  Open venue in Maps
-                </a>
-                <a
-                  href={VENUE_WEBSITE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={ButtonPrimaryClassName}
-                  style={{ fontFamily: sfFontSans }}
-                >
-                  Greendays website
-                </a>
-              </div>
+            <div className={invitationSecondPane}>
+              <RSVPSummary
+                inviteDetails={inviteDetails}
+                onEdit={() => {
+                  if (submitSucceeded) {
+                    setSubmitSucceeded(false);
+                  }
+                  setIsEditingRsvp(true);
+                  scrollInvitationDocToTop();
+                }}
+              />
             </div>
           </div>
-
-          <StandardFormShell
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-          >
-            <StandardServerError error={serverError} />
-
-            <form.Field name="rsvpStatus">
-              {(field) => (
-                <StandardFormFieldRadioGroup
-                  field={field}
-                  label="Can you attend?"
-                  options={[
-                    { label: 'Attending', value: 'attending' },
-                    { label: 'Unable to make it', value: 'unable' },
-                  ]}
-                />
-              )}
-            </form.Field>
-
-            {rsvpStatus === 'attending' ? (
-              <form.Field name="dietaryRequirements">
-                {(field) => (
-                  <StandardFormFieldTextarea
-                    field={field}
-                    label="Dietary requirements"
-                    hint="Optional. Allergies, dietary needs, or none."
-                    placeholder="e.g. Nut allergy, vegetarian, or none"
-                    autoComplete="off"
-                    rows={4}
-                  />
-                )}
-              </form.Field>
-            ) : null}
-
-            <form.Subscribe
-              selector={(state) => ({
-                canSubmit: state.canSubmit,
-                isSubmitting: state.isSubmitting,
-                // `isTouched` turns true on blur even when nothing changed; `isDirty`
-                // only reflects value updates (TanStack sets both on real edits via setFieldValue).
-                isDirty: state.isDirty,
-                rsvpStatus: state.values.rsvpStatus,
-              })}
-            >
-              {({ canSubmit, isSubmitting, isDirty, rsvpStatus: status }) => (
-                <StandardSubmitButton
-                  canSubmit={canSubmit && isDirty}
-                  isSubmitting={isSubmitting}
-                  loadingText={
-                    priorSubmitted
-                      ? 'Updating…'
-                      : status === 'unable'
-                        ? 'Confirming…'
-                        : 'Sending…'
-                  }
-                >
-                  {priorSubmitted
-                    ? 'Update RSVP'
-                    : status === 'unable'
-                      ? 'Confirm'
-                      : 'Send RSVP'}
-                </StandardSubmitButton>
-              )}
-            </form.Subscribe>
-
-            <div
-              className="text-center text-[0.8125rem] leading-snug text-white/48"
-              style={{ fontFamily: sfFontSans }}
-            >
-              <Link
-                to="/"
-                target="_blank"
-                hash="gallery"
-                rel="noopener noreferrer"
-                className={clsx(
-                  'font-medium text-slate-200/95 underline decoration-white/18 underline-offset-[0.24em] transition-colors',
-                  'hover:text-white hover:decoration-white/45',
-                  'focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-white/45 focus-visible:outline-none',
-                )}
-              >
-                Open the engagement gallery
-              </Link>
+          <EngagementGallerySection />
+          <section className="border-t border-white/15 pt-10">
+            <SpotifySongRequestPicker inviteId={inviteDetails.id} />
+          </section>
+        </div>
+      ) : (
+        <div className="w-full space-y-8 lg:space-y-10">
+          <InvitationInviteeGreeting name={inviteDetails.name} />
+          <div className={invitationTwoColumnGrid}>
+            <div className="min-w-0">
+              <InvitationVenueDetailsCard />
             </div>
-          </StandardFormShell>
-        </>
+
+            <div className={invitationSecondPane}>
+              <StandardFormShell
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
+              >
+                <StandardServerError error={serverError} />
+
+                <form.Field name="rsvpStatus">
+                  {(field) => (
+                    <StandardFormFieldRadioGroup
+                      field={field}
+                      label="Can you attend?"
+                      options={[
+                        { label: 'Attending', value: 'attending' },
+                        { label: 'Unable to make it', value: 'unable' },
+                      ]}
+                    />
+                  )}
+                </form.Field>
+
+                {rsvpStatus === 'attending' ? (
+                  <>
+                    <form.Field name="mealChoice">
+                      {(field) => (
+                        <StandardFormFieldRadioGroup
+                          variant="stacked"
+                          field={field}
+                          label="Meal choice"
+                          options={MEAL_CHOICE_OPTIONS.map((o) => ({
+                            label: o.label,
+                            value: o.value,
+                          }))}
+                        />
+                      )}
+                    </form.Field>
+
+                    <form.Field name="dietaryRequirements">
+                      {(field) => (
+                        <StandardFormFieldTextarea
+                          field={field}
+                          label="Dietary requirements"
+                          hint="Optional. Allergies, dietary needs, or none."
+                          placeholder="e.g. Nut allergy, vegetarian, or none"
+                          autoComplete="off"
+                          rows={4}
+                        />
+                      )}
+                    </form.Field>
+
+                    <form.Field name="additionalNotes">
+                      {(field) => (
+                        <StandardFormFieldTextarea
+                          field={field}
+                          label="Additional notes"
+                          hint="Optional."
+                          placeholder="Anything else we should know"
+                          autoComplete="off"
+                          rows={4}
+                        />
+                      )}
+                    </form.Field>
+                  </>
+                ) : null}
+
+                <form.Subscribe
+                  selector={(state) => ({
+                    canSubmit: state.canSubmit,
+                    isSubmitting: state.isSubmitting,
+                    // `isTouched` turns true on blur even when nothing changed; `isDirty`
+                    // only reflects value updates (TanStack sets both on real edits via setFieldValue).
+                    isDirty: state.isDirty,
+                    rsvpStatus: state.values.rsvpStatus,
+                  })}
+                >
+                  {({
+                    canSubmit,
+                    isSubmitting,
+                    isDirty,
+                    rsvpStatus: status,
+                  }) => (
+                    <StandardSubmitButton
+                      canSubmit={canSubmit && isDirty}
+                      isSubmitting={isSubmitting}
+                      loadingText={
+                        priorSubmitted
+                          ? 'Updating…'
+                          : status === 'unable'
+                            ? 'Confirming…'
+                            : 'Sending…'
+                      }
+                    >
+                      {priorSubmitted
+                        ? 'Update RSVP'
+                        : status === 'unable'
+                          ? 'Confirm'
+                          : 'Send RSVP'}
+                    </StandardSubmitButton>
+                  )}
+                </form.Subscribe>
+
+                <div
+                  className="text-center text-[0.8125rem] leading-snug text-white/48"
+                  style={{ fontFamily: sfFontSans }}
+                >
+                  <Link
+                    to="/"
+                    target="_blank"
+                    hash="gallery"
+                    rel="noopener noreferrer"
+                    className={clsx(
+                      'font-medium text-slate-200/95 underline decoration-white/18 underline-offset-[0.24em] transition-colors',
+                      'hover:text-white hover:decoration-white/45',
+                      'focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-white/45 focus-visible:outline-none',
+                    )}
+                  >
+                    Open the engagement gallery
+                  </Link>
+                </div>
+              </StandardFormShell>
+            </div>
+          </div>
+        </div>
       )}
     </StandardFormLayout>
   );

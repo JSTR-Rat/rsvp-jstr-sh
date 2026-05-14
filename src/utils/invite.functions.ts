@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { authenticatedMiddleware } from './auth.middleware';
 import { getDB } from '@/db';
 import { invite } from '@/db/schema';
+import { mealChoiceIdSchema } from '@/lib/wedding-meal-options';
 import z from 'zod';
 import { and, eq, inArray, not } from 'drizzle-orm';
 
@@ -107,6 +108,7 @@ export const adminDeleteInviteFN = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ id: z.uuid() }))
   .handler(async ({ data }) => {
     const db = getDB();
+    // `spotify_requested_track.invite_id` uses ON DELETE CASCADE — requests are removed with the invite.
     const deleted = await db
       .delete(invite)
       .where(eq(invite.id, data.id))
@@ -137,6 +139,8 @@ export const getInviteDetailsFN = createServerFn({ method: 'GET' })
         name: invite.name,
         status: invite.status,
         diataryRequirements: invite.diataryRequirements,
+        mealChoice: invite.mealChoice,
+        additionalNotes: invite.additionalNotes,
       })
       .from(invite)
       .where(eq(invite.id, data.id))
@@ -165,24 +169,47 @@ export const markInviteSeenFN = createServerFn({ method: 'GET' })
       .limit(1);
   });
 
+const updateInviteResponseInputSchema = z
+  .object({
+    id: z.uuid(),
+    isAttending: z.boolean(),
+    dietaryRequirements: z.string().nullable(),
+    mealChoice: mealChoiceIdSchema.nullable(),
+    additionalNotes: z.string().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.isAttending && data.mealChoice === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Meal choice is required.',
+        path: ['mealChoice'],
+      });
+    }
+  });
+
 export const updateInviteResponseFN = createServerFn({ method: 'POST' })
-  .inputValidator(
-    z.object({
-      id: z.uuid(),
-      isAttending: z.boolean(),
-      dietaryRequirements: z.string().nullable(),
-    }),
-  )
+  .inputValidator(updateInviteResponseInputSchema)
   .handler(async ({ data }) => {
     const db = getDB();
-    await db
-      .update(invite)
-      .set({
-        status: data.isAttending ? 'attending' : 'not-attending',
-        diataryRequirements: data.dietaryRequirements,
-      })
-      .where(eq(invite.id, data.id))
-      .limit(1);
+    if (data.isAttending) {
+      await db
+        .update(invite)
+        .set({
+          status: 'attending',
+          diataryRequirements: data.dietaryRequirements?.trim() || null,
+          mealChoice: data.mealChoice,
+          additionalNotes: data.additionalNotes?.trim() || null,
+        })
+        .where(eq(invite.id, data.id))
+        .limit(1);
+    } else {
+      /** Keep meal / dietary / notes from a prior "attending" reply — only status changes. */
+      await db
+        .update(invite)
+        .set({ status: 'not-attending' })
+        .where(eq(invite.id, data.id))
+        .limit(1);
+    }
 
     return { success: true };
   });

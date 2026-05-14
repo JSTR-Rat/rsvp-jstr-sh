@@ -1,3 +1,4 @@
+import { MEAL_CHOICE_IDS } from '@/lib/wedding-meal-options';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
@@ -8,6 +9,11 @@ export const invite = sqliteTable('invite', {
   email: text('email').notNull(),
   name: text('name').notNull(),
   diataryRequirements: text('diatary_requirements'),
+  /** Drizzle `text` enum — values match `MEAL_CHOICE_IDS`. Nullable when no RSVP / not attending. */
+  mealChoice: text('meal_choice', {
+    enum: MEAL_CHOICE_IDS,
+  }),
+  additionalNotes: text('additional_notes'),
   status: text('status', {
     enum: ['not-sent', 'sent', 'seen', 'attending', 'not-attending'],
   })
