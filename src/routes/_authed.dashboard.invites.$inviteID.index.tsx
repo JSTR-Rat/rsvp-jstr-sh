@@ -1,3 +1,4 @@
+import { ButtonDanger } from '@/components/button-danger';
 import { ButtonPrimary, ButtonPrimaryClassName } from '@/components/button-primary';
 import { invite } from '@/db/schema';
 import { StandardFormPanel } from '@/forms/standard-form';
@@ -8,6 +9,10 @@ import {
   sfLabel,
 } from '@/forms/standard-form/shared-classes';
 import { mealChoiceLabel } from '@/lib/wedding-meal-options';
+import {
+  inviteHasPriorRsvpResponse,
+  type InviteDbStatus,
+} from '@/lib/invite-rsvp-status';
 import {
   adminDeleteInviteFN,
   adminGetInviteDetailFN,
@@ -40,6 +45,13 @@ function inviteStatusLabel(status: InviteRow['status']): string {
     default:
       return status;
   }
+}
+
+function inviteProgressLabel(status: InviteRow['status']): string {
+  if (inviteHasPriorRsvpResponse(status as InviteDbStatus)) {
+    return 'Responded';
+  }
+  return inviteStatusLabel(status);
 }
 
 function formatTs(iso: string): string {
@@ -137,7 +149,7 @@ function RouteComponent() {
               </p>
             )}
             {inviteRow.diataryRequirements ? (
-              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+              <p className="mt-2 text-[0.875rem] leading-relaxed whitespace-pre-wrap text-white/72">
                 Dietary requirements: {inviteRow.diataryRequirements}
               </p>
             ) : (
@@ -146,7 +158,7 @@ function RouteComponent() {
               </p>
             )}
             {inviteRow.additionalNotes ? (
-              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+              <p className="mt-2 text-[0.875rem] leading-relaxed whitespace-pre-wrap text-white/72">
                 Additional notes: {inviteRow.additionalNotes}
               </p>
             ) : null}
@@ -164,12 +176,12 @@ function RouteComponent() {
               </p>
             ) : null}
             {inviteRow.diataryRequirements?.trim() ? (
-              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+              <p className="mt-2 text-[0.875rem] leading-relaxed whitespace-pre-wrap text-white/72">
                 Dietary requirements: {inviteRow.diataryRequirements}
               </p>
             ) : null}
             {inviteRow.additionalNotes?.trim() ? (
-              <p className="mt-2 text-[0.875rem] leading-relaxed text-white/72">
+              <p className="mt-2 text-[0.875rem] leading-relaxed whitespace-pre-wrap text-white/72">
                 Additional notes: {inviteRow.additionalNotes}
               </p>
             ) : null}
@@ -178,10 +190,7 @@ function RouteComponent() {
       }
       default:
         return (
-          <span className="text-white/62">
-            No RSVP submitted yet. Invitation status:{' '}
-            {inviteStatusLabel(inviteRow.status)}.
-          </span>
+          <span className="text-white/62">No RSVP submitted yet.</span>
         );
     }
   })();
@@ -222,7 +231,7 @@ function RouteComponent() {
                 className="text-[0.9375rem] text-white/82"
                 style={{ fontFamily: sfFontSans }}
               >
-                {inviteStatusLabel(inviteRow.status)}
+                {inviteProgressLabel(inviteRow.status)}
               </dd>
             </div>
 
@@ -285,14 +294,13 @@ function RouteComponent() {
             >
               Edit guest details
             </Link>
-            <ButtonPrimary
+            <ButtonDanger
               type="button"
               disabled={deleteBusy}
-              className="border-rose-500/30 bg-rose-950/22 text-rose-100/93 hover:border-rose-400/40 hover:bg-rose-950/35 disabled:opacity-60"
               onClick={() => void handleDeleteInvite()}
             >
               {deleteBusy ? 'Deleting…' : 'Delete invite'}
-            </ButtonPrimary>
+            </ButtonDanger>
           </div>
 
           <StandardServerError error={deleteError} />

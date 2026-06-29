@@ -15,6 +15,7 @@ export function StandardFormPanel({ children }: StandardFormPanelProps) {
 interface StandardFormShellProps {
   onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
   children: ReactNode;
+  shellClassName?: string;
 }
 
 /**
@@ -23,9 +24,10 @@ interface StandardFormShellProps {
 export function StandardFormShell({
   onSubmit,
   children,
+  shellClassName = sfShell,
 }: StandardFormShellProps) {
   return (
-    <div className={sfShell}>
+    <div className={shellClassName}>
       <form onSubmit={onSubmit} className={sfFormFields} noValidate>
         {children}
       </form>

@@ -43,6 +43,13 @@
       "when": 1778650486945,
       "tag": "0005_nasty_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1781503694835,
+      "tag": "0006_handy_infant_terrible",
+      "breakpoints": true
     }
   ]
 }

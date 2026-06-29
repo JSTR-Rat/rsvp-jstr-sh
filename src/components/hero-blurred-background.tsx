@@ -3,10 +3,19 @@ export const HERO_BLURRED_BG_MOBILE =
 export const HERO_BLURRED_BG_DESKTOP =
   '/images/generated/gallery/engagement_04_gallery.webp';
 
-export const HeroBlurredBackground = () => {
+export const HeroBlurredBackground = ({
+  fullPage = false,
+}: {
+  /** Cover the full document (invitation below-fold) instead of one viewport. */
+  fullPage?: boolean;
+}) => {
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-lvh min-h-lvh w-full overflow-hidden"
+      className={
+        fullPage
+          ? 'pointer-events-none fixed inset-0 -z-10 w-full overflow-hidden'
+          : 'pointer-events-none fixed inset-x-0 top-0 -z-10 h-lvh min-h-lvh w-full overflow-hidden'
+      }
       aria-hidden
     >
       <div className="absolute inset-0">

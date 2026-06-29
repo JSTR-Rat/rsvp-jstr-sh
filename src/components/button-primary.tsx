@@ -1,4 +1,5 @@
 import { sfFontSans } from '@/forms/standard-form/shared-classes';
+import { tw } from '@/lib/tw-merge';
 import { Button, type ButtonProps } from '@headlessui/react';
 import clsx from 'clsx';
 import type { FC } from 'react';
@@ -19,7 +20,7 @@ export const ButtonPrimary: FC<ButtonProps> = ({
 }) => {
   return (
     <Button
-      className={clsx(ButtonPrimaryClassName, className)}
+      className={tw(ButtonPrimaryClassName, className)}
       style={{ fontFamily: sfFontSans }}
       {...props}
     >

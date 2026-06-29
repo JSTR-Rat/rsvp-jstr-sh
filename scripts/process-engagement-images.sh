@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 #
-# Generate WebP derivatives (placeholder, gallery, lightbox) from engagement_*.jpg
+# Generate WebP and JPEG derivatives (placeholder, gallery, lightbox) from engagement_*.jpg
 # using libvips vipsthumbnail. Originals are never modified or removed.
 #
-# Reads originals from image_originals/ (not deployed with static assets). Writes WebP
-# derivatives to public/images/generated/. Processes every engagement_*.jpg (version-sorted).
+# Reads originals from image_originals/ (not deployed with static assets). Writes WebP and
+# JPEG derivatives to public/images/generated/. Processes every engagement_*.jpg (version-sorted).
+#
+# JPEG outputs match WebP sizing/quality targets (e.g. email-safe gallery JPGs alongside
+# site WebP).
 #
 # Requires: vipsthumbnail, vipsheader (libvips)
 #
@@ -110,7 +113,7 @@ main() {
   # Stable version sort so engagement_2 does not sort after engagement_10
   mapfile -t sorted < <(printf '%s\n' "${files[@]}" | sort -V)
 
-  echo "Processing engagement JPEGs → WebP (strip metadata, -t EXIF orientation)"
+  echo "Processing engagement JPEGs → WebP + JPEG (strip metadata, -t EXIF orientation)"
   echo "Source: ${SRC_DIR}"
   echo "Outputs: ${OUT_PH}, ${OUT_GA}, ${OUT_LB}"
   echo ""
@@ -144,14 +147,26 @@ main() {
       -o "${OUT_PH}/%s_placeholder.webp[strip,Q=28,effort=2]"
 
     vipsthumbnail "$input" -t \
+      -s "${ph_box}x${ph_box}>" \
+      -o "${OUT_PH}/%s_placeholder.jpg[strip,Q=28]"
+
+    vipsthumbnail "$input" -t \
       -s "${ga_box}x${ga_box}>" \
       -o "${OUT_GA}/%s_gallery.webp[strip,Q=82,effort=4]"
+
+    vipsthumbnail "$input" -t \
+      -s "${ga_box}x${ga_box}>" \
+      -o "${OUT_GA}/%s_gallery.jpg[strip,Q=82]"
 
     vipsthumbnail "$input" -t \
       -s "${lb_box}x${lb_box}>" \
       -o "${OUT_LB}/%s_lightbox.webp[strip,Q=90,effort=5]"
 
-    echo "  wrote: $(basename "$input" .jpg)_{placeholder,gallery,lightbox}.webp → ${OUT_BASE}/"
+    vipsthumbnail "$input" -t \
+      -s "${lb_box}x${lb_box}>" \
+      -o "${OUT_LB}/%s_lightbox.jpg[strip,Q=90]"
+
+    echo "  wrote: $(basename "$input" .jpg)_{placeholder,gallery,lightbox}.webp / .jpg → ${OUT_BASE}/"
     echo ""
   done
 

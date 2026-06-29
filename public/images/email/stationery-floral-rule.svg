@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 0 302 36" fill="none" width="302" height="36">
+  <g transform="translate(-22 0)">
+    <g
+      stroke="rgba(255,255,255,0.38)"
+      stroke-width="0.65"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path
+        opacity="0.92"
+        d="M12 20c14-10 28-10 42 0s28 10 42 0 28-10 42 0 28 10 42 0 28-10 42 0 28 10 42 0 28-10 42 0"
+      />
+      <path
+        opacity="0.45"
+        d="M44 14c4-5 10-5 14 0M86 22c4 5 10 5 14 0M128 14c4-5 10-5 14 0M170 22c4 5 10 5 14 0M212 14c4-5 10-5 14 0"
+      />
+    </g>
+    <g fill="rgba(255,255,255,0.22)" stroke="none" opacity="0.88">
+      <circle cx="144" cy="18" r="2.2" />
+      <ellipse cx="144" cy="12" rx="2.8" ry="4.2" opacity="0.35" />
+    </g>
+  </g>
+</svg>

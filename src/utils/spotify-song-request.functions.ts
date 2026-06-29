@@ -16,6 +16,7 @@ import { invite, spotifyRequestedTrack } from '@/db/schema';
 import { createServerFn } from '@tanstack/react-start';
 import { and, desc, eq } from 'drizzle-orm';
 import z from 'zod';
+import { assertEventCutoffNotPassed } from '@/lib/wedding-event-details';
 import {
   SPOTIFY_SEARCH_LIMIT_MAX,
   SPOTIFY_SEARCH_LIMIT_MIN,
@@ -146,6 +147,7 @@ export const requestSongFN = createServerFn({ method: 'POST' })
     inviteIdSchema.extend({ track: spotifyTrackInputSchema }),
   )
   .handler(async ({ data }): Promise<void> => {
+    assertEventCutoffNotPassed();
     await ensureInviteExists(data.inviteId);
     const db = getDB();
     const payload = trackToStoredPayload(data.track);
@@ -171,6 +173,7 @@ export const unrequestSongFN = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data }): Promise<void> => {
+    assertEventCutoffNotPassed();
     await ensureInviteExists(data.inviteId);
     const db = getDB();
     await db
@@ -186,6 +189,7 @@ export const unrequestSongFN = createServerFn({ method: 'POST' })
 export const searchSpotifyTracksFN = createServerFn({ method: 'POST' })
   .inputValidator(searchInputSchema)
   .handler(async ({ data }): Promise<SpotifyTrackSearchResponse> => {
+    assertEventCutoffNotPassed();
     return fetchSpotifyTrackSearch({
       q: data.q,
       limit: data.limit,

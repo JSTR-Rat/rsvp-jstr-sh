@@ -40,6 +40,13 @@ export const sfSubtitle =
 export const sfShell =
   'rounded-lg border border-white/12 bg-black/50 p-6 shadow-[0_28px_64px_-12px_rgba(0,0,0,0.55)] backdrop-blur-lg sm:p-7';
 
+/**
+ * Same shell on an already-opaque dark section (`bg-black/80`). Skips
+ * backdrop-blur so the panel does not stack into flat black.
+ */
+export const sfShellOnDarkBackdrop =
+  'rounded-lg border border-white/12 bg-black/20 p-6 shadow-[0_28px_64px_-12px_rgba(0,0,0,0.55)] sm:p-7';
+
 export const sfFormFields = 'space-y-5';
 
 /** Label rhythm matches index route date strip caps. */

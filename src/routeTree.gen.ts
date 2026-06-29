@@ -13,14 +13,21 @@ import { Route as TestAuthRouteImport } from './routes/test-auth'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SignoutRouteImport } from './routes/signout'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as DevOnlyRouteImport } from './routes/_dev-only'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InvitationInviteIDRouteImport } from './routes/invitation.$inviteID'
 import { Route as AuthedDashboardRouteRouteImport } from './routes/_authed.dashboard.route'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed.dashboard.index'
+import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks.resend'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as DevOnlyEmailPreviewWeddingInviteStationeryHeroRouteImport } from './routes/_dev-only.email-preview.wedding-invite-stationery-hero'
+import { Route as DevOnlyEmailPreviewWeddingInviteStationeryRouteImport } from './routes/_dev-only.email-preview.wedding-invite-stationery'
+import { Route as DevOnlyEmailPreviewWeddingInviteRouteImport } from './routes/_dev-only.email-preview.wedding-invite'
+import { Route as DevOnlyEmailPreviewRsvpNotificationsRouteImport } from './routes/_dev-only.email-preview.rsvp-notifications'
 import { Route as AuthedDashboardInvitesNewRouteImport } from './routes/_authed.dashboard.invites.new'
 import { Route as AuthedDashboardInvitesInviteIDRouteImport } from './routes/_authed.dashboard.invites.$inviteID'
+import { Route as AuthedDashboardReceivedEmailsEmailIDIndexRouteImport } from './routes/_authed.dashboard.received-emails.$emailID.index'
 import { Route as AuthedDashboardInvitesInviteIDIndexRouteImport } from './routes/_authed.dashboard.invites.$inviteID.index'
 import { Route as AuthedDashboardInvitesInviteIDEditRouteImport } from './routes/_authed.dashboard.invites.$inviteID.edit'
 
@@ -42,6 +49,10 @@ const SignoutRoute = SignoutRouteImport.update({
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevOnlyRoute = DevOnlyRouteImport.update({
+  id: '/_dev-only',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedRoute = AuthedRouteImport.update({
@@ -68,11 +79,40 @@ const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedDashboardRouteRoute,
 } as any)
+const ApiWebhooksResendRoute = ApiWebhooksResendRouteImport.update({
+  id: '/api/webhooks/resend',
+  path: '/api/webhooks/resend',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute =
+  DevOnlyEmailPreviewWeddingInviteStationeryHeroRouteImport.update({
+    id: '/email-preview/wedding-invite-stationery-hero',
+    path: '/email-preview/wedding-invite-stationery-hero',
+    getParentRoute: () => DevOnlyRoute,
+  } as any)
+const DevOnlyEmailPreviewWeddingInviteStationeryRoute =
+  DevOnlyEmailPreviewWeddingInviteStationeryRouteImport.update({
+    id: '/email-preview/wedding-invite-stationery',
+    path: '/email-preview/wedding-invite-stationery',
+    getParentRoute: () => DevOnlyRoute,
+  } as any)
+const DevOnlyEmailPreviewWeddingInviteRoute =
+  DevOnlyEmailPreviewWeddingInviteRouteImport.update({
+    id: '/email-preview/wedding-invite',
+    path: '/email-preview/wedding-invite',
+    getParentRoute: () => DevOnlyRoute,
+  } as any)
+const DevOnlyEmailPreviewRsvpNotificationsRoute =
+  DevOnlyEmailPreviewRsvpNotificationsRouteImport.update({
+    id: '/email-preview/rsvp-notifications',
+    path: '/email-preview/rsvp-notifications',
+    getParentRoute: () => DevOnlyRoute,
+  } as any)
 const AuthedDashboardInvitesNewRoute =
   AuthedDashboardInvitesNewRouteImport.update({
     id: '/invites/new',
@@ -83,6 +123,12 @@ const AuthedDashboardInvitesInviteIDRoute =
   AuthedDashboardInvitesInviteIDRouteImport.update({
     id: '/invites/$inviteID',
     path: '/invites/$inviteID',
+    getParentRoute: () => AuthedDashboardRouteRoute,
+  } as any)
+const AuthedDashboardReceivedEmailsEmailIDIndexRoute =
+  AuthedDashboardReceivedEmailsEmailIDIndexRouteImport.update({
+    id: '/received-emails/$emailID/',
+    path: '/received-emails/$emailID/',
     getParentRoute: () => AuthedDashboardRouteRoute,
   } as any)
 const AuthedDashboardInvitesInviteIDIndexRoute =
@@ -106,12 +152,18 @@ export interface FileRoutesByFullPath {
   '/test-auth': typeof TestAuthRoute
   '/dashboard': typeof AuthedDashboardRouteRouteWithChildren
   '/invitation/$inviteID': typeof InvitationInviteIDRoute
+  '/email-preview/rsvp-notifications': typeof DevOnlyEmailPreviewRsvpNotificationsRoute
+  '/email-preview/wedding-invite': typeof DevOnlyEmailPreviewWeddingInviteRoute
+  '/email-preview/wedding-invite-stationery': typeof DevOnlyEmailPreviewWeddingInviteStationeryRoute
+  '/email-preview/wedding-invite-stationery-hero': typeof DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
   '/dashboard/invites/$inviteID': typeof AuthedDashboardInvitesInviteIDRouteWithChildren
   '/dashboard/invites/new': typeof AuthedDashboardInvitesNewRoute
   '/dashboard/invites/$inviteID/edit': typeof AuthedDashboardInvitesInviteIDEditRoute
   '/dashboard/invites/$inviteID/': typeof AuthedDashboardInvitesInviteIDIndexRoute
+  '/dashboard/received-emails/$emailID/': typeof AuthedDashboardReceivedEmailsEmailIDIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -120,28 +172,41 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/test-auth': typeof TestAuthRoute
   '/invitation/$inviteID': typeof InvitationInviteIDRoute
+  '/email-preview/rsvp-notifications': typeof DevOnlyEmailPreviewRsvpNotificationsRoute
+  '/email-preview/wedding-invite': typeof DevOnlyEmailPreviewWeddingInviteRoute
+  '/email-preview/wedding-invite-stationery': typeof DevOnlyEmailPreviewWeddingInviteStationeryRoute
+  '/email-preview/wedding-invite-stationery-hero': typeof DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
   '/dashboard/invites/new': typeof AuthedDashboardInvitesNewRoute
   '/dashboard/invites/$inviteID/edit': typeof AuthedDashboardInvitesInviteIDEditRoute
   '/dashboard/invites/$inviteID': typeof AuthedDashboardInvitesInviteIDIndexRoute
+  '/dashboard/received-emails/$emailID': typeof AuthedDashboardReceivedEmailsEmailIDIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
+  '/_dev-only': typeof DevOnlyRouteWithChildren
   '/signin': typeof SigninRoute
   '/signout': typeof SignoutRoute
   '/signup': typeof SignupRoute
   '/test-auth': typeof TestAuthRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteRouteWithChildren
   '/invitation/$inviteID': typeof InvitationInviteIDRoute
+  '/_dev-only/email-preview/rsvp-notifications': typeof DevOnlyEmailPreviewRsvpNotificationsRoute
+  '/_dev-only/email-preview/wedding-invite': typeof DevOnlyEmailPreviewWeddingInviteRoute
+  '/_dev-only/email-preview/wedding-invite-stationery': typeof DevOnlyEmailPreviewWeddingInviteStationeryRoute
+  '/_dev-only/email-preview/wedding-invite-stationery-hero': typeof DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
   '/_authed/dashboard/invites/$inviteID': typeof AuthedDashboardInvitesInviteIDRouteWithChildren
   '/_authed/dashboard/invites/new': typeof AuthedDashboardInvitesNewRoute
   '/_authed/dashboard/invites/$inviteID/edit': typeof AuthedDashboardInvitesInviteIDEditRoute
   '/_authed/dashboard/invites/$inviteID/': typeof AuthedDashboardInvitesInviteIDIndexRoute
+  '/_authed/dashboard/received-emails/$emailID/': typeof AuthedDashboardReceivedEmailsEmailIDIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -153,12 +218,18 @@ export interface FileRouteTypes {
     | '/test-auth'
     | '/dashboard'
     | '/invitation/$inviteID'
+    | '/email-preview/rsvp-notifications'
+    | '/email-preview/wedding-invite'
+    | '/email-preview/wedding-invite-stationery'
+    | '/email-preview/wedding-invite-stationery-hero'
     | '/api/auth/$'
+    | '/api/webhooks/resend'
     | '/dashboard/'
     | '/dashboard/invites/$inviteID'
     | '/dashboard/invites/new'
     | '/dashboard/invites/$inviteID/edit'
     | '/dashboard/invites/$inviteID/'
+    | '/dashboard/received-emails/$emailID/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -167,38 +238,53 @@ export interface FileRouteTypes {
     | '/signup'
     | '/test-auth'
     | '/invitation/$inviteID'
+    | '/email-preview/rsvp-notifications'
+    | '/email-preview/wedding-invite'
+    | '/email-preview/wedding-invite-stationery'
+    | '/email-preview/wedding-invite-stationery-hero'
     | '/api/auth/$'
+    | '/api/webhooks/resend'
     | '/dashboard'
     | '/dashboard/invites/new'
     | '/dashboard/invites/$inviteID/edit'
     | '/dashboard/invites/$inviteID'
+    | '/dashboard/received-emails/$emailID'
   id:
     | '__root__'
     | '/'
     | '/_authed'
+    | '/_dev-only'
     | '/signin'
     | '/signout'
     | '/signup'
     | '/test-auth'
     | '/_authed/dashboard'
     | '/invitation/$inviteID'
+    | '/_dev-only/email-preview/rsvp-notifications'
+    | '/_dev-only/email-preview/wedding-invite'
+    | '/_dev-only/email-preview/wedding-invite-stationery'
+    | '/_dev-only/email-preview/wedding-invite-stationery-hero'
     | '/api/auth/$'
+    | '/api/webhooks/resend'
     | '/_authed/dashboard/'
     | '/_authed/dashboard/invites/$inviteID'
     | '/_authed/dashboard/invites/new'
     | '/_authed/dashboard/invites/$inviteID/edit'
     | '/_authed/dashboard/invites/$inviteID/'
+    | '/_authed/dashboard/received-emails/$emailID/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
+  DevOnlyRoute: typeof DevOnlyRouteWithChildren
   SigninRoute: typeof SigninRoute
   SignoutRoute: typeof SignoutRoute
   SignupRoute: typeof SignupRoute
   TestAuthRoute: typeof TestAuthRoute
   InvitationInviteIDRoute: typeof InvitationInviteIDRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -229,6 +315,13 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dev-only': {
+      id: '/_dev-only'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DevOnlyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -266,12 +359,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardIndexRouteImport
       parentRoute: typeof AuthedDashboardRouteRoute
     }
+    '/api/webhooks/resend': {
+      id: '/api/webhooks/resend'
+      path: '/api/webhooks/resend'
+      fullPath: '/api/webhooks/resend'
+      preLoaderRoute: typeof ApiWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_dev-only/email-preview/wedding-invite-stationery-hero': {
+      id: '/_dev-only/email-preview/wedding-invite-stationery-hero'
+      path: '/email-preview/wedding-invite-stationery-hero'
+      fullPath: '/email-preview/wedding-invite-stationery-hero'
+      preLoaderRoute: typeof DevOnlyEmailPreviewWeddingInviteStationeryHeroRouteImport
+      parentRoute: typeof DevOnlyRoute
+    }
+    '/_dev-only/email-preview/wedding-invite-stationery': {
+      id: '/_dev-only/email-preview/wedding-invite-stationery'
+      path: '/email-preview/wedding-invite-stationery'
+      fullPath: '/email-preview/wedding-invite-stationery'
+      preLoaderRoute: typeof DevOnlyEmailPreviewWeddingInviteStationeryRouteImport
+      parentRoute: typeof DevOnlyRoute
+    }
+    '/_dev-only/email-preview/wedding-invite': {
+      id: '/_dev-only/email-preview/wedding-invite'
+      path: '/email-preview/wedding-invite'
+      fullPath: '/email-preview/wedding-invite'
+      preLoaderRoute: typeof DevOnlyEmailPreviewWeddingInviteRouteImport
+      parentRoute: typeof DevOnlyRoute
+    }
+    '/_dev-only/email-preview/rsvp-notifications': {
+      id: '/_dev-only/email-preview/rsvp-notifications'
+      path: '/email-preview/rsvp-notifications'
+      fullPath: '/email-preview/rsvp-notifications'
+      preLoaderRoute: typeof DevOnlyEmailPreviewRsvpNotificationsRouteImport
+      parentRoute: typeof DevOnlyRoute
     }
     '/_authed/dashboard/invites/new': {
       id: '/_authed/dashboard/invites/new'
@@ -285,6 +413,13 @@ declare module '@tanstack/react-router' {
       path: '/invites/$inviteID'
       fullPath: '/dashboard/invites/$inviteID'
       preLoaderRoute: typeof AuthedDashboardInvitesInviteIDRouteImport
+      parentRoute: typeof AuthedDashboardRouteRoute
+    }
+    '/_authed/dashboard/received-emails/$emailID/': {
+      id: '/_authed/dashboard/received-emails/$emailID/'
+      path: '/received-emails/$emailID'
+      fullPath: '/dashboard/received-emails/$emailID/'
+      preLoaderRoute: typeof AuthedDashboardReceivedEmailsEmailIDIndexRouteImport
       parentRoute: typeof AuthedDashboardRouteRoute
     }
     '/_authed/dashboard/invites/$inviteID/': {
@@ -326,6 +461,7 @@ interface AuthedDashboardRouteRouteChildren {
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
   AuthedDashboardInvitesInviteIDRoute: typeof AuthedDashboardInvitesInviteIDRouteWithChildren
   AuthedDashboardInvitesNewRoute: typeof AuthedDashboardInvitesNewRoute
+  AuthedDashboardReceivedEmailsEmailIDIndexRoute: typeof AuthedDashboardReceivedEmailsEmailIDIndexRoute
 }
 
 const AuthedDashboardRouteRouteChildren: AuthedDashboardRouteRouteChildren = {
@@ -333,6 +469,8 @@ const AuthedDashboardRouteRouteChildren: AuthedDashboardRouteRouteChildren = {
   AuthedDashboardInvitesInviteIDRoute:
     AuthedDashboardInvitesInviteIDRouteWithChildren,
   AuthedDashboardInvitesNewRoute: AuthedDashboardInvitesNewRoute,
+  AuthedDashboardReceivedEmailsEmailIDIndexRoute:
+    AuthedDashboardReceivedEmailsEmailIDIndexRoute,
 }
 
 const AuthedDashboardRouteRouteWithChildren =
@@ -349,15 +487,37 @@ const AuthedRouteChildren: AuthedRouteChildren = {
 const AuthedRouteWithChildren =
   AuthedRoute._addFileChildren(AuthedRouteChildren)
 
+interface DevOnlyRouteChildren {
+  DevOnlyEmailPreviewRsvpNotificationsRoute: typeof DevOnlyEmailPreviewRsvpNotificationsRoute
+  DevOnlyEmailPreviewWeddingInviteRoute: typeof DevOnlyEmailPreviewWeddingInviteRoute
+  DevOnlyEmailPreviewWeddingInviteStationeryRoute: typeof DevOnlyEmailPreviewWeddingInviteStationeryRoute
+  DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute: typeof DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute
+}
+
+const DevOnlyRouteChildren: DevOnlyRouteChildren = {
+  DevOnlyEmailPreviewRsvpNotificationsRoute:
+    DevOnlyEmailPreviewRsvpNotificationsRoute,
+  DevOnlyEmailPreviewWeddingInviteRoute: DevOnlyEmailPreviewWeddingInviteRoute,
+  DevOnlyEmailPreviewWeddingInviteStationeryRoute:
+    DevOnlyEmailPreviewWeddingInviteStationeryRoute,
+  DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute:
+    DevOnlyEmailPreviewWeddingInviteStationeryHeroRoute,
+}
+
+const DevOnlyRouteWithChildren =
+  DevOnlyRoute._addFileChildren(DevOnlyRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
+  DevOnlyRoute: DevOnlyRouteWithChildren,
   SigninRoute: SigninRoute,
   SignoutRoute: SignoutRoute,
   SignupRoute: SignupRoute,
   TestAuthRoute: TestAuthRoute,
   InvitationInviteIDRoute: InvitationInviteIDRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiWebhooksResendRoute: ApiWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

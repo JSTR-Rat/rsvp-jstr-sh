@@ -4,6 +4,7 @@ import {
   sfFontSerif,
   sfLabel,
 } from '@/forms/standard-form/shared-classes';
+import { isRsvpCutoffPassed } from '@/lib/wedding-event-details';
 import type {
   RequestedSong,
   SpotifySongRequestPickerProps,
@@ -166,6 +167,8 @@ export function SpotifySongRequestPicker({
     [api, inviteId],
   );
 
+  const playlistClosed = isRsvpCutoffPassed();
+
   const [query, setQuery] = useState('');
   const [activeSearch, setActiveSearch] = useState<ActiveSearch | null>(null);
   const [requestedSectionOpen, setRequestedSectionOpen] = useState(true);
@@ -199,18 +202,20 @@ export function SpotifySongRequestPicker({
       });
     },
     enabled:
+      !playlistClosed &&
       !!activeSearch &&
       activeSearch.q.trim().length > 0 &&
       activeSearch.limit > 0,
   });
 
   useEffect(() => {
-    if (!queryTrimmed) {
+    if (!queryTrimmed || playlistClosed) {
       setActiveSearch(null);
     }
-  }, [queryTrimmed]);
+  }, [queryTrimmed, playlistClosed]);
 
   useEffect(() => {
+    if (playlistClosed) return;
     const q = debouncedTrimmed;
     if (!q) {
       return;
@@ -224,7 +229,7 @@ export function SpotifySongRequestPicker({
       limit: effectivePageSize,
       market: m.length === 2 ? m : undefined,
     });
-  }, [debouncedTrimmed, queryTrimmed, defaultMarket, effectivePageSize]);
+  }, [debouncedTrimmed, queryTrimmed, defaultMarket, effectivePageSize, playlistClosed]);
 
   const isSearchStale =
     queryTrimmed.length > 0 && queryTrimmed !== debouncedTrimmed;
@@ -287,20 +292,22 @@ export function SpotifySongRequestPicker({
         >
           Wedding Playlist
         </h2>
-        <p className="text-[0.8125rem] leading-relaxed text-white/60">
-          {maxRequests !== undefined ? (
-            <>
-              Have a song you&apos;d love to hear? Search below and add it to
-              the playlist — up to {maxRequests} song
-              {maxRequests === 1 ? '' : 's'} per guest.
-            </>
-          ) : (
-            <>
-              Have a song you&apos;d love to hear? Search below and add it to
-              the playlist.
-            </>
-          )}
-        </p>
+        {playlistClosed ? null : (
+          <p className="text-[0.8125rem] leading-relaxed text-white/60">
+            {maxRequests !== undefined ? (
+              <>
+                Have a song you&apos;d love to hear? Search below and add it to
+                the playlist — up to {maxRequests} song
+                {maxRequests === 1 ? '' : 's'} per guest.
+              </>
+            ) : (
+              <>
+                Have a song you&apos;d love to hear? Search below and add it to
+                the playlist.
+              </>
+            )}
+          </p>
+        )}
         <p className="text-[0.75rem] text-white/48">
           {maxRequests !== undefined ? (
             <>
@@ -314,25 +321,27 @@ export function SpotifySongRequestPicker({
         </p>
       </header>
 
-      <div className="rounded-lg border border-white/12 bg-black/35 p-4 backdrop-blur-sm sm:p-5">
-        <div>
-          <label htmlFor={`${baseId}-q`} className={sfLabel}>
-            Search tracks
-          </label>
-          <input
-            id={`${baseId}-q`}
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Song, artist, or keywords"
-            autoComplete="off"
-            enterKeyHint="search"
-            className={sfControlText(false)}
-          />
+      {playlistClosed ? null : (
+        <div className="rounded-lg border border-white/12 bg-black/35 p-4 backdrop-blur-sm sm:p-5">
+          <div>
+            <label htmlFor={`${baseId}-q`} className={sfLabel}>
+              Search tracks
+            </label>
+            <input
+              id={`${baseId}-q`}
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Song, artist, or keywords"
+              autoComplete="off"
+              enterKeyHint="search"
+              className={sfControlText(false)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
-      {searchQuery.isError ? (
+      {!playlistClosed && searchQuery.isError ? (
         <div
           className="rounded-md border border-red-400/42 bg-red-950/42 p-4 text-[0.8125rem] text-red-100/95 backdrop-blur-sm"
           role="alert"
@@ -343,7 +352,7 @@ export function SpotifySongRequestPicker({
         </div>
       ) : null}
 
-      {queryTrimmed && !searchQuery.isError ? (
+      {!playlistClosed && queryTrimmed && !searchQuery.isError ? (
         <div className="space-y-4" aria-busy={resultsLoading}>
           {resultsLoading ? (
             <TrackResultSkeletonList
@@ -367,6 +376,7 @@ export function SpotifySongRequestPicker({
                     atLimit={atLimit}
                     disableRequest={isBusy}
                     disableUnrequest={isBusy}
+                    allowRemove={!playlistClosed}
                     onRequest={() => requestMutation.mutate(track)}
                     onUnrequest={() => unrequestMutation.mutate(track.id)}
                   />
@@ -377,7 +387,7 @@ export function SpotifySongRequestPicker({
         </div>
       ) : null}
 
-      {!queryTrimmed ? (
+      {!playlistClosed && !queryTrimmed ? (
         <p className="text-center text-[0.8125rem] text-white/48">
           Start typing to search Spotify.
         </p>
@@ -422,6 +432,7 @@ export function SpotifySongRequestPicker({
                   <li key={song.spotifyTrackId} className="px-1 sm:px-0">
                     <RequestedSongRow
                       song={song}
+                      allowRemove={!playlistClosed}
                       disableUnrequest={isBusy}
                       onUnrequest={() =>
                         unrequestMutation.mutate(song.spotifyTrackId)
@@ -444,6 +455,7 @@ function TrackResultRow({
   atLimit,
   disableRequest,
   disableUnrequest,
+  allowRemove,
   onRequest,
   onUnrequest,
 }: {
@@ -452,6 +464,7 @@ function TrackResultRow({
   atLimit: boolean;
   disableRequest: boolean;
   disableUnrequest: boolean;
+  allowRemove: boolean;
   onRequest: () => void;
   onUnrequest: () => void;
 }) {
@@ -522,15 +535,17 @@ function TrackResultRow({
           <ExternalLink className="size-4" aria-hidden />
         </a>
         {requested ? (
-          <button
-            type="button"
-            className={rowIconButtonClass}
-            aria-label={`Remove “${track.name}” from requests`}
-            disabled={disableUnrequest}
-            onClick={onUnrequest}
-          >
-            <Minus className="size-4 stroke-[2.5]" aria-hidden />
-          </button>
+          allowRemove ? (
+            <button
+              type="button"
+              className={rowIconButtonClass}
+              aria-label={`Remove “${track.name}” from requests`}
+              disabled={disableUnrequest}
+              onClick={onUnrequest}
+            >
+              <Minus className="size-4 stroke-[2.5]" aria-hidden />
+            </button>
+          ) : null
         ) : (
           <button
             type="button"
@@ -549,10 +564,12 @@ function TrackResultRow({
 
 function RequestedSongRow({
   song,
+  allowRemove,
   disableUnrequest,
   onUnrequest,
 }: {
   song: RequestedSong;
+  allowRemove: boolean;
   disableUnrequest: boolean;
   onUnrequest: () => void;
 }) {
@@ -620,15 +637,17 @@ function RequestedSongRow({
         >
           <ExternalLink className="size-4" aria-hidden />
         </a>
-        <button
-          type="button"
-          className={rowIconButtonClass}
-          aria-label={`Remove “${song.name}” from requests`}
-          disabled={disableUnrequest}
-          onClick={onUnrequest}
-        >
-          <Minus className="size-4 stroke-[2.5]" aria-hidden />
-        </button>
+        {allowRemove ? (
+          <button
+            type="button"
+            className={rowIconButtonClass}
+            aria-label={`Remove “${song.name}” from requests`}
+            disabled={disableUnrequest}
+            onClick={onUnrequest}
+          >
+            <Minus className="size-4 stroke-[2.5]" aria-hidden />
+          </button>
+        ) : null}
       </div>
     </div>
   );

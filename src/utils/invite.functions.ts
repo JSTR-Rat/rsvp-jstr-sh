@@ -2,6 +2,11 @@ import { createServerFn } from '@tanstack/react-start';
 import { authenticatedMiddleware } from './auth.middleware';
 import { getDB } from '@/db';
 import { invite } from '@/db/schema';
+import { assertEventCutoffNotPassed } from '@/lib/wedding-event-details';
+import {
+  inviteHasPriorRsvpResponse,
+  type InviteDbStatus,
+} from '@/lib/invite-rsvp-status';
 import { mealChoiceIdSchema } from '@/lib/wedding-meal-options';
 import z from 'zod';
 import { and, eq, inArray, not } from 'drizzle-orm';
@@ -190,7 +195,23 @@ const updateInviteResponseInputSchema = z
 export const updateInviteResponseFN = createServerFn({ method: 'POST' })
   .inputValidator(updateInviteResponseInputSchema)
   .handler(async ({ data }) => {
+    assertEventCutoffNotPassed();
+
     const db = getDB();
+    const existingRows = await db
+      .select({ status: invite.status })
+      .from(invite)
+      .where(eq(invite.id, data.id))
+      .limit(1);
+    const existing = existingRows[0];
+    if (existing === undefined) {
+      throw new Error('Invite not found');
+    }
+
+    const isUpdate = inviteHasPriorRsvpResponse(
+      existing.status as InviteDbStatus,
+    );
+
     if (data.isAttending) {
       await db
         .update(invite)
@@ -209,6 +230,13 @@ export const updateInviteResponseFN = createServerFn({ method: 'POST' })
         .set({ status: 'not-attending' })
         .where(eq(invite.id, data.id))
         .limit(1);
+    }
+
+    try {
+      const { sendRsvpNotificationEmails } = await import('./invite-resend');
+      await sendRsvpNotificationEmails({ inviteId: data.id, isUpdate });
+    } catch (err) {
+      console.error('RSVP notification dispatch failed:', err);
     }
 
     return { success: true };

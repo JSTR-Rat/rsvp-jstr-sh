@@ -3,6 +3,7 @@ import { invite } from '@/db/schema';
 import { StandardFormPanel } from '@/forms/standard-form';
 import { sfFontSans, sfFontSerif } from '@/forms/standard-form/shared-classes';
 import { adminListInvitesFN } from '@/utils/invite.functions';
+import { adminListReceivedEmailsFN } from '@/utils/received-email.functions';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import clsx from 'clsx';
 
@@ -25,19 +26,33 @@ function inviteStatusLabel(status: InviteRow['status']): string {
   }
 }
 
+function formatTs(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  } catch {
+    return iso;
+  }
+}
+
 export const Route = createFileRoute('/_authed/dashboard/')({
   staticData: {
     title: 'Dashboard',
   },
   component: RouteComponent,
   loader: async () => {
-    const invites = await adminListInvitesFN();
-    return { invites };
+    const [invites, receivedEmails] = await Promise.all([
+      adminListInvitesFN(),
+      adminListReceivedEmailsFN(),
+    ]);
+    return { invites, receivedEmails };
   },
 });
 
 function RouteComponent() {
-  const { invites } = Route.useLoaderData();
+  const { invites, receivedEmails } = Route.useLoaderData();
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
@@ -170,6 +185,112 @@ function RouteComponent() {
                         style={{ fontFamily: sfFontSans }}
                       >
                         Edit
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <StandardFormPanel>
+        <div className="space-y-2 text-left">
+          <h2
+            className="text-[1.25rem] font-medium tracking-tight text-white sm:text-[1.375rem]"
+            style={{ fontFamily: sfFontSerif }}
+          >
+            Received emails
+          </h2>
+          <p
+            className="text-[0.9375rem] leading-relaxed text-white/65"
+            style={{ fontFamily: sfFontSans }}
+          >
+            Replies and messages sent to your wedding inbox.
+          </p>
+        </div>
+      </StandardFormPanel>
+
+      <div className="overflow-hidden rounded-lg border border-white/12 bg-black/35 backdrop-blur-sm">
+        {receivedEmails.length === 0 ? (
+          <p
+            className="px-4 py-10 text-center text-[0.9375rem] text-white/55"
+            style={{ fontFamily: sfFontSans }}
+          >
+            No received emails yet.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse text-left text-[0.8125rem]">
+              <thead>
+                <tr className="border-b border-white/12 bg-white/4">
+                  <th
+                    className="px-4 py-3 font-medium tracking-wide text-white/72"
+                    style={{ fontFamily: sfFontSans }}
+                  >
+                    From
+                  </th>
+                  <th
+                    className="px-4 py-3 font-medium tracking-wide text-white/72"
+                    style={{ fontFamily: sfFontSans }}
+                  >
+                    Subject
+                  </th>
+                  <th
+                    className="px-4 py-3 font-medium tracking-wide text-white/72"
+                    style={{ fontFamily: sfFontSans }}
+                  >
+                    Received
+                  </th>
+                  <th
+                    className="px-4 py-3 font-medium tracking-wide text-white/72"
+                    style={{ fontFamily: sfFontSans }}
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {receivedEmails.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-b border-white/6 last:border-b-0"
+                  >
+                    <td
+                      className="max-w-[220px] truncate px-4 py-3 text-white/75"
+                      style={{ fontFamily: sfFontSans }}
+                      title={row.fromAddress}
+                    >
+                      {row.fromAddress}
+                    </td>
+                    <td
+                      className="max-w-[280px] truncate px-4 py-3 font-medium text-white/92"
+                      style={{ fontFamily: sfFontSerif }}
+                      title={row.subject}
+                    >
+                      <Link
+                        to="/dashboard/received-emails/$emailID"
+                        params={{ emailID: row.id }}
+                        className="text-white/92 underline decoration-white/25 underline-offset-[0.18em] hover:text-white hover:decoration-white/45"
+                      >
+                        {row.subject}
+                      </Link>
+                    </td>
+                    <td
+                      className="px-4 py-3 whitespace-nowrap text-white/70"
+                      style={{ fontFamily: sfFontSans }}
+                    >
+                      {formatTs(row.receivedAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        to="/dashboard/received-emails/$emailID"
+                        params={{ emailID: row.id }}
+                        className="font-medium text-white/85 underline decoration-white/25 underline-offset-[0.18em] hover:decoration-white/45"
+                        style={{ fontFamily: sfFontSans }}
+                      >
+                        View
                       </Link>
                     </td>
                   </tr>
