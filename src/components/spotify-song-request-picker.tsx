@@ -33,12 +33,33 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-const rowIconButtonClass = clsx(
-  'inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-white/18 bg-white/6',
-  'text-white/88 transition-[border-color,background-color]',
-  'hover:border-white/28 hover:bg-white/10',
-  'focus-visible:border-white/40 focus-visible:ring-[3px] focus-visible:ring-white/22 focus-visible:outline-none',
+const rowIconButtonBase = clsx(
+  'inline-flex size-9 shrink-0 items-center justify-center rounded-md border',
+  'transition-[border-color,background-color,transform]',
+  'focus-visible:ring-[3px] focus-visible:outline-none',
+  'active:scale-95',
   'disabled:pointer-events-none disabled:opacity-35',
+);
+
+const rowLinkButtonClass = clsx(
+  rowIconButtonBase,
+  'border-white/18 bg-white/6 text-white/88',
+  'hover:border-white/28 hover:bg-white/10',
+  'focus-visible:border-white/40 focus-visible:ring-white/22',
+);
+
+const rowAddButtonClass = clsx(
+  rowIconButtonBase,
+  'border-emerald-400/45 bg-emerald-950/45 text-emerald-50',
+  'hover:border-emerald-300/60 hover:bg-emerald-900/55',
+  'focus-visible:ring-emerald-400/35',
+);
+
+const rowRemoveButtonClass = clsx(
+  rowIconButtonBase,
+  'border-rose-400/45 bg-rose-950/45 text-rose-50',
+  'hover:border-rose-300/60 hover:bg-rose-900/55',
+  'focus-visible:ring-rose-400/35',
 );
 
 function TrackResultSkeletonRow() {
@@ -139,6 +160,20 @@ function formatDuration(ms: number): string {
   return `${m}:${r.toString().padStart(2, '0')}`;
 }
 
+function trackToRequestedSong(track: SpotifyTrack): RequestedSong {
+  const albumImageUrl = track.album.images.find((i) => i.url)?.url ?? null;
+  return {
+    spotifyTrackId: track.id,
+    name: track.name,
+    artists: track.artists.map((a) => a.name),
+    albumName: track.album.name,
+    albumImageUrl,
+    durationMs: track.duration_ms,
+    explicit: track.explicit,
+    spotifyUrl: track.external_urls.spotify,
+  };
+}
+
 type ActiveSearch = {
   q: string;
   limit: number;
@@ -178,8 +213,10 @@ export function SpotifySongRequestPicker({
   const queryTrimmed = query.trim();
   const debouncedTrimmed = debouncedQuery.trim();
 
+  const requestedQueryKey = ['spotify-requested-songs', inviteId] as const;
+
   const requestedQuery = useQuery({
-    queryKey: ['spotify-requested-songs', inviteId],
+    queryKey: requestedQueryKey,
     queryFn: () => apiImpl.getRequestedSongs(),
   });
 
@@ -256,27 +293,56 @@ export function SpotifySongRequestPicker({
 
   const requestMutation = useMutation({
     mutationFn: (track: SpotifyTrack) => apiImpl.requestSong(track),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['spotify-requested-songs', inviteId],
+    onMutate: async (track) => {
+      await queryClient.cancelQueries({ queryKey: requestedQueryKey });
+      const previous = queryClient.getQueryData<RequestedSong[]>(
+        requestedQueryKey,
+      );
+      queryClient.setQueryData<RequestedSong[]>(requestedQueryKey, (old = []) => {
+        if (old.some((song) => song.spotifyTrackId === track.id)) return old;
+        return [trackToRequestedSong(track), ...old];
       });
+      return { previous };
+    },
+    onError: (_error, _track, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(requestedQueryKey, context.previous);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: requestedQueryKey });
     },
   });
 
   const unrequestMutation = useMutation({
     mutationFn: (spotifyTrackId: string) =>
       apiImpl.unrequestSong(spotifyTrackId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['spotify-requested-songs', inviteId],
-      });
+    onMutate: async (spotifyTrackId) => {
+      await queryClient.cancelQueries({ queryKey: requestedQueryKey });
+      const previous = queryClient.getQueryData<RequestedSong[]>(
+        requestedQueryKey,
+      );
+      queryClient.setQueryData<RequestedSong[]>(requestedQueryKey, (old = []) =>
+        old.filter((song) => song.spotifyTrackId !== spotifyTrackId),
+      );
+      return { previous };
+    },
+    onError: (_error, _spotifyTrackId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(requestedQueryKey, context.previous);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: requestedQueryKey });
     },
   });
 
-  const isBusy =
-    requestMutation.isPending ||
-    unrequestMutation.isPending ||
-    requestedQuery.isFetching;
+  const pendingRequestTrackId = requestMutation.isPending
+    ? requestMutation.variables?.id
+    : null;
+  const pendingUnrequestTrackId = unrequestMutation.isPending
+    ? unrequestMutation.variables
+    : null;
 
   const tracksPage = searchQuery.data?.tracks;
 
@@ -374,8 +440,8 @@ export function SpotifySongRequestPicker({
                     track={track}
                     requested={requestedIds.has(track.id)}
                     atLimit={atLimit}
-                    disableRequest={isBusy}
-                    disableUnrequest={isBusy}
+                    disableRequest={pendingRequestTrackId === track.id}
+                    disableUnrequest={pendingUnrequestTrackId === track.id}
                     allowRemove={!playlistClosed}
                     onRequest={() => requestMutation.mutate(track)}
                     onUnrequest={() => unrequestMutation.mutate(track.id)}
@@ -433,7 +499,9 @@ export function SpotifySongRequestPicker({
                     <RequestedSongRow
                       song={song}
                       allowRemove={!playlistClosed}
-                      disableUnrequest={isBusy}
+                      disableUnrequest={
+                        pendingUnrequestTrackId === song.spotifyTrackId
+                      }
                       onUnrequest={() =>
                         unrequestMutation.mutate(song.spotifyTrackId)
                       }
@@ -521,42 +589,52 @@ function TrackResultRow({
           </span>
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1.5">
         <a
           href={track.external_urls.spotify}
           target="_blank"
           rel="noopener noreferrer"
-          className={clsx(
-            rowIconButtonClass,
-            'border-sky-400/35 text-sky-100/95 hover:border-sky-300/48 hover:bg-sky-950/35',
-          )}
+          className={rowLinkButtonClass}
           aria-label={`Open “${track.name}” in Spotify`}
         >
           <ExternalLink className="size-4" aria-hidden />
         </a>
-        {requested ? (
-          allowRemove ? (
+        <div className="relative size-9 shrink-0">
+          {allowRemove ? (
             <button
               type="button"
-              className={rowIconButtonClass}
+              className={clsx(
+                rowRemoveButtonClass,
+                'absolute inset-0',
+                requested
+                  ? 'opacity-100'
+                  : 'pointer-events-none opacity-0',
+              )}
               aria-label={`Remove “${track.name}” from requests`}
-              disabled={disableUnrequest}
+              aria-hidden={!requested}
+              tabIndex={requested ? 0 : -1}
+              disabled={!requested || disableUnrequest}
               onClick={onUnrequest}
             >
-              <Minus className="size-4 stroke-[2.5]" aria-hidden />
+              <Minus className="size-4 stroke-[3]" aria-hidden />
             </button>
-          ) : null
-        ) : (
+          ) : null}
           <button
             type="button"
-            className={rowIconButtonClass}
+            className={clsx(
+              rowAddButtonClass,
+              allowRemove && 'absolute inset-0',
+              requested ? 'pointer-events-none opacity-0' : 'opacity-100',
+            )}
             aria-label={`Request “${track.name}”`}
+            aria-hidden={requested}
+            tabIndex={requested ? -1 : 0}
             disabled={requestDisabled}
             onClick={onRequest}
           >
-            <Plus className="size-4 stroke-[2.5]" aria-hidden />
+            <Plus className="size-4 stroke-[3]" aria-hidden />
           </button>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -624,15 +702,12 @@ function RequestedSongRow({
           </span>
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1.5">
         <a
           href={song.spotifyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={clsx(
-            rowIconButtonClass,
-            'border-sky-400/35 text-sky-100/95 hover:border-sky-300/48 hover:bg-sky-950/35',
-          )}
+          className={rowLinkButtonClass}
           aria-label={`Open “${song.name}” in Spotify`}
         >
           <ExternalLink className="size-4" aria-hidden />
@@ -640,12 +715,12 @@ function RequestedSongRow({
         {allowRemove ? (
           <button
             type="button"
-            className={rowIconButtonClass}
+            className={rowRemoveButtonClass}
             aria-label={`Remove “${song.name}” from requests`}
             disabled={disableUnrequest}
             onClick={onUnrequest}
           >
-            <Minus className="size-4 stroke-[2.5]" aria-hidden />
+            <Minus className="size-4 stroke-[3]" aria-hidden />
           </button>
         ) : null}
       </div>
