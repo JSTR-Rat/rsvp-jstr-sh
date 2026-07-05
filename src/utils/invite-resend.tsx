@@ -150,8 +150,8 @@ export async function sendRsvpNotificationEmails({
   try {
     const inviteeKind = isUpdate ? 'updated' : 'received';
     const inviteeSubject = isUpdate
-      ? 'Your RSVP has been updated - Vada & Wade'
-      : "We've received your RSVP - Vada & Wade";
+      ? 'Your RSVP has been updated'
+      : "We've received your RSVP";
     const inviteeHtml = await render(
       <WeddingInviteeRsvpEmail
         kind={inviteeKind}
@@ -191,8 +191,8 @@ export async function sendRsvpNotificationEmails({
 
     const adminKind = isUpdate ? 'updated' : 'new';
     const adminSubject = isUpdate
-      ? `RSVP updated for ${row.name} - Vada & Wade`
-      : `New RSVP from ${row.name} - Vada & Wade`;
+      ? `RSVP updated for ${row.name}`
+      : `New RSVP from ${row.name}`;
     const adminHtml = await render(
       <WeddingAdminRsvpEmail
         kind={adminKind}
