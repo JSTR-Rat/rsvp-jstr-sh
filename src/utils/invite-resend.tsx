@@ -65,7 +65,7 @@ export async function sendInvitationEmail(
   const { error } = await resend.emails.send({
     from,
     to: row.email,
-    subject: "You're invited - Vada & Wade",
+    subject: "You're Invited!",
     html,
   });
 

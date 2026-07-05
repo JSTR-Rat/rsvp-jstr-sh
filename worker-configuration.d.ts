@@ -5,7 +5,7 @@ declare namespace Cloudflare {
 	interface StagingEnv {
 		DB: D1Database;
 		BETTER_AUTH_URL: "https://staging.wada.wedding";
-		RESEND_FROM_EMAIL: "RSVP <rsvp@wada.wedding>";
+		RESEND_FROM_EMAIL: "Vada & Wade - RSVP <rsvp@wada.wedding>";
 		BETTER_AUTH_SECRET: string;
 		TURNSTILE_SECRET_KEY: string;
 		RESEND_API_KEY: string;
@@ -16,7 +16,7 @@ declare namespace Cloudflare {
 	interface ProductionEnv {
 		DB: D1Database;
 		BETTER_AUTH_URL: "https://wada.wedding";
-		RESEND_FROM_EMAIL: "RSVP <rsvp@wada.wedding>";
+		RESEND_FROM_EMAIL: "Vada & Wade - RSVP <rsvp@wada.wedding>";
 		BETTER_AUTH_SECRET: string;
 		TURNSTILE_SECRET_KEY: string;
 		RESEND_API_KEY: string;
@@ -27,7 +27,7 @@ declare namespace Cloudflare {
 	interface Env {
 		DB: D1Database;
 		BETTER_AUTH_URL: "https://staging.wada.wedding" | "https://wada.wedding" | "http://localhost:3000";
-		RESEND_FROM_EMAIL: "RSVP <rsvp@wada.wedding>";
+		RESEND_FROM_EMAIL: "Vada & Wade - RSVP <rsvp@wada.wedding>";
 		BETTER_AUTH_SECRET: string;
 		TURNSTILE_SECRET_KEY: string;
 		RESEND_API_KEY: string;

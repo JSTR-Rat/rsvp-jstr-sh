@@ -43,7 +43,7 @@
    */
   "vars": {
     "BETTER_AUTH_URL": "http://localhost:3000",
-    "RESEND_FROM_EMAIL": "RSVP <rsvp@wada.wedding>",
+    "RESEND_FROM_EMAIL": "Vada & Wade - RSVP <rsvp@wada.wedding>",
   },
   "secrets": {
     "required": [
@@ -84,7 +84,7 @@
       ],
       "vars": {
         "BETTER_AUTH_URL": "https://staging.wada.wedding",
-        "RESEND_FROM_EMAIL": "RSVP <rsvp@wada.wedding>",
+        "RESEND_FROM_EMAIL": "Vada & Wade - RSVP <rsvp@wada.wedding>",
       },
       "secrets": {
         "required": [
@@ -115,7 +115,7 @@
       ],
       "vars": {
         "BETTER_AUTH_URL": "https://wada.wedding",
-        "RESEND_FROM_EMAIL": "RSVP <rsvp@wada.wedding>",
+        "RESEND_FROM_EMAIL": "Vada & Wade - RSVP <rsvp@wada.wedding>",
       },
       "secrets": {
         "required": [
