@@ -16,7 +16,11 @@ export const adminListInvitesFN = createServerFn({ method: 'GET' })
   .handler(async () => {
     const db = getDB();
     const invites = await db.select().from(invite);
-    return invites;
+    const { inviteEmailDeliveryConfigured } = await import('./invite-resend');
+    return {
+      invites,
+      emailDeliveryConfigured: inviteEmailDeliveryConfigured(),
+    };
   });
 
 export const adminCreateInviteFN = createServerFn({ method: 'POST' })
@@ -132,6 +136,37 @@ export const adminSendInviteEmailFN = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { sendInvitationEmail } = await import('./invite-resend');
     return sendInvitationEmail(data.id);
+  });
+
+export const adminSendUnsentInviteEmailsFN = createServerFn({ method: 'POST' })
+  .middleware([authenticatedMiddleware])
+  .handler(async () => {
+    const db = getDB();
+    const rows = await db
+      .select({ id: invite.id, name: invite.name })
+      .from(invite)
+      .where(eq(invite.status, 'not-sent'));
+
+    const { sendInvitationEmail } = await import('./invite-resend');
+
+    let sent = 0;
+    const failed: { id: string; name: string; error: string }[] = [];
+
+    for (const row of rows) {
+      try {
+        await sendInvitationEmail(row.id);
+        sent++;
+      } catch (err: unknown) {
+        failed.push({
+          id: row.id,
+          name: row.name,
+          error:
+            err instanceof Error ? err.message : 'Could not send the email.',
+        });
+      }
+    }
+
+    return { sent, failed };
   });
 
 export const getInviteDetailsFN = createServerFn({ method: 'GET' })
