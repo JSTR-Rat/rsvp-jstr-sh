@@ -282,8 +282,9 @@ export function StationeryCoupleNamesHeading() {
         textAlign: 'center',
       }}
     >
-      <span style={{ display: 'block' }}>Vada &amp;</span>
-      <span style={{ display: 'block', marginTop: '0.12em' }}>Wade</span>
+      Vada &amp;{' '}
+      <br />
+      Wade
     </h1>
   );
 }
@@ -292,10 +293,12 @@ export function StationeryEmailCtaButton({
   href,
   label,
   ariaLabel,
+  uppercase = true,
 }: {
   href: string;
   label: string;
   ariaLabel: string;
+  uppercase?: boolean;
 }) {
   return (
     <table
@@ -329,8 +332,8 @@ export function StationeryEmailCtaButton({
                 fontFamily: stationeryEmailFontSans,
                 fontSize: '11px',
                 fontWeight: 500,
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
+                letterSpacing: uppercase ? '0.22em' : '0.04em',
+                textTransform: uppercase ? 'uppercase' : 'none',
                 textDecoration: 'none',
                 borderRadius: '6px',
                 border: '1px solid rgba(255,255,255,0.06)',
@@ -593,8 +596,9 @@ export function WeddingInviteStationeryCard({
 
                 <StationeryEmailCtaButton
                   href={inviteLink}
-                  label="RSVP"
-                  ariaLabel="RSVP to the wedding online"
+                  label="Click here to RSVP"
+                  ariaLabel="Click here to RSVP to the wedding online"
+                  uppercase={false}
                 />
 
                 <p
