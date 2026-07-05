@@ -10,17 +10,12 @@ import {
 } from '@/lib/gallery-lightbox-search';
 import {
   SAVE_THE_DATE_HEAD_PRELOADS,
-  SAVE_THE_DATE_TAGLINE,
 } from '@/lib/save-the-date-constants';
-
-const PAGE_TITLE = 'Vada & Wade - RSVP';
-const PAGE_DESCRIPTION = SAVE_THE_DATE_TAGLINE;
-/** 1200×630 — large OG / Discord / Twitter preview card */
-const OG_IMAGE_URL = '/wada-og.jpg';
-const OG_IMAGE_WIDTH = 1200;
-const OG_IMAGE_HEIGHT = 630;
-const OG_IMAGE_ALT =
-  'Vada and Wade seated together in front of a silver Toyota Crown at golden hour.';
+import {
+  LANDING_PAGE_DESCRIPTION,
+  PAGE_TITLE_WEDDING,
+  buildSocialMetaTags,
+} from '@/lib/page-social-meta';
 
 export type HomeSearch = GalleryImageSearch;
 
@@ -28,23 +23,10 @@ export const Route = createFileRoute('/')({
   validateSearch: validateGalleryImageSearch,
   component: RouteComponent,
   head: () => ({
-    meta: [
-      { title: PAGE_TITLE },
-      { name: 'description', content: PAGE_DESCRIPTION },
-      { name: 'og:title', content: PAGE_TITLE },
-      { name: 'og:description', content: PAGE_DESCRIPTION },
-      { name: 'og:type', content: 'website' },
-      { name: 'og:image', content: OG_IMAGE_URL },
-      { name: 'og:image:width', content: String(OG_IMAGE_WIDTH) },
-      { name: 'og:image:height', content: String(OG_IMAGE_HEIGHT) },
-      { name: 'og:image:type', content: 'image/jpeg' },
-      { name: 'og:image:alt', content: OG_IMAGE_ALT },
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: PAGE_TITLE },
-      { name: 'twitter:description', content: PAGE_DESCRIPTION },
-      { name: 'twitter:image', content: OG_IMAGE_URL },
-      { name: 'twitter:image:alt', content: OG_IMAGE_ALT },
-    ],
+    meta: buildSocialMetaTags({
+      title: PAGE_TITLE_WEDDING,
+      description: LANDING_PAGE_DESCRIPTION,
+    }),
     links: SAVE_THE_DATE_HEAD_PRELOADS,
   }),
 });

@@ -1,7 +1,7 @@
 /** Save-the-date hero — backgrounds, copy, and typography shared with `/`. */
 
 export const SAVE_THE_DATE_TAGLINE =
-  "We'd love to share our special day with you. Formal invitation to follow.";
+  "We'd love to share our special day with you.";
 
 /** Portrait / phone — tiny placeholder, then full WebP */
 export const SAVE_THE_DATE_BG_PLACEHOLDER_MOBILE =

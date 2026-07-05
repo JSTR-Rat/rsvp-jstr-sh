@@ -48,13 +48,17 @@ import {
 } from '@/lib/gallery-lightbox-search';
 import { SAVE_THE_DATE_HEAD_PRELOADS } from '@/lib/save-the-date-constants';
 import {
+  INVITATION_PAGE_DESCRIPTION,
+  PAGE_TITLE_RSVP,
+  buildSocialMetaTags,
+} from '@/lib/page-social-meta';
+import {
   MEAL_CHOICE_OPTIONS,
   mealChoiceIdSchema,
   mealChoiceLabel,
   type MealChoiceId,
 } from '@/lib/wedding-meal-options';
 import {
-  EVENT_WHEN_PRIMARY,
   RSVP_CUTOFF_PASSED_ERROR_MESSAGE,
   formatRsvpCutoffDateForDisplay,
   isRsvpCutoffPassed,
@@ -69,9 +73,6 @@ import {
   updateInviteResponseFN,
 } from '@/utils/invite.functions';
 import { SpotifySongRequestPicker } from '@/components/spotify-song-request-picker';
-
-const PAGE_TITLE = 'Vada & Wade - RSVP';
-const PAGE_DESCRIPTION = `Reply to our wedding invitation: ${EVENT_WHEN_PRIMARY}.`;
 
 /** Route path `/invitation/$inviteID` — UUID before loader / server calls. */
 const invitationRouteParamsSchema = z.object({
@@ -512,10 +513,10 @@ export const Route = createFileRoute('/invitation/$inviteID')({
     return { inviteDetails };
   },
   head: () => ({
-    meta: [
-      { title: PAGE_TITLE },
-      { name: 'description', content: PAGE_DESCRIPTION },
-    ],
+    meta: buildSocialMetaTags({
+      title: PAGE_TITLE_RSVP,
+      description: INVITATION_PAGE_DESCRIPTION,
+    }),
     links: SAVE_THE_DATE_HEAD_PRELOADS,
   }),
 });

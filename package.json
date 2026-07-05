@@ -20,7 +20,8 @@
     "deploy:staging": "pnpm run build:staging && wrangler deploy",
     "deploy:production": "pnpm run build:production && wrangler deploy",
     "cf-typegen": "wrangler types",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "images:og": "bash scripts/generate-wada-og.sh"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.37.0",
